@@ -1,9 +1,9 @@
 <?php include 'header.php'; ?>
 
-    <!-- Page-specific styles -->
+    <!-- Page-specific mobile-friendly styles -->
     <style>
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
@@ -11,19 +11,20 @@
             margin-bottom: 8px;
             font-weight: 600;
             color: #333;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
         .form-group input,
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             border: 2px solid #e1e5e9;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 1rem;
             transition: all 0.3s ease;
             background: #f8f9fa;
+            min-height: 44px; /* Touch-friendly */
         }
 
         .form-group input:focus,
@@ -37,26 +38,26 @@
 
         .form-group textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 80px;
         }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 15px;
         }
 
         .properties-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
         }
 
         .property-card {
             background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -73,8 +74,8 @@
         }
 
         .property-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
         }
 
         .property-header {
@@ -82,10 +83,12 @@
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .property-title {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: #333;
             margin-bottom: 5px;
@@ -93,23 +96,23 @@
 
         .property-date {
             color: #6c757d;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .property-price {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 6px 12px;
+            border-radius: 15px;
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
         .property-status {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 15px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             margin-bottom: 10px;
         }
@@ -121,13 +124,14 @@
 
         .property-notes {
             color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
         }
 
         .property-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
@@ -136,13 +140,16 @@
             text-decoration: none;
             background: #f8f9fa;
             color: #333;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 10px 12px;
+            border-radius: 6px;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             font-weight: 500;
+            font-size: 0.9rem;
+            min-height: 44px;
+            justify-content: center;
         }
 
         .property-link:hover {
@@ -152,40 +159,40 @@
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
         }
 
         .stat-card {
             background: rgba(255,255,255,0.15);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 15px;
             text-align: center;
             color: white;
         }
 
         .stat-number {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 700;
             margin-bottom: 5px;
         }
 
         .stat-label {
             opacity: 0.9;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
         .no-properties {
             text-align: center;
             color: white;
-            padding: 60px 20px;
+            padding: 40px 20px;
         }
 
         .no-properties h3 {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             margin-bottom: 10px;
             opacity: 0.9;
         }
@@ -200,6 +207,7 @@
             background: rgba(0,0,0,0.5);
             z-index: 1000;
             backdrop-filter: blur(5px);
+            padding: 10px;
         }
 
         .modal-content {
@@ -208,19 +216,22 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 30px;
-            border-radius: 20px;
+            padding: 20px;
+            border-radius: 15px;
             max-width: 500px;
-            width: 90%;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .close {
             position: absolute;
-            top: 15px;
-            right: 20px;
+            top: 10px;
+            right: 15px;
             font-size: 1.5rem;
             cursor: pointer;
             color: #999;
+            padding: 5px;
         }
 
         .loading {
@@ -229,24 +240,93 @@
             padding: 20px;
         }
 
+        /* Mobile optimizations */
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .properties-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .property-card {
+                padding: 15px;
+            }
+
+            .property-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .property-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .property-link {
+                flex: none;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-number {
+                font-size: 1.5rem;
+            }
+
+            .modal-content {
+                margin: 20px 10px;
+                padding: 15px;
+                max-height: calc(100vh - 40px);
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .property-card {
+                padding: 12px;
+            }
+
+            .property-title {
+                font-size: 1.1rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                padding: 10px;
             }
         }
     </style>
 
     <div class="content-section">
-        <h2 style="margin-bottom: 25px; color: #333;">Add New Property</h2>
+        <h2 style="margin-bottom: 20px; color: #333;">Add New Property</h2>
         <form id="propertyForm">
             <div class="form-row">
                 <div class="form-group">
                     <label for="propertyUrl">Property URL *</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="url" id="propertyUrl" name="url" required placeholder="https://www.daft.ie/ or myhome.ie/ or any property site..." style="flex: 1;">
-                        <button type="button" class="btn" onclick="autoFillProperty()" style="padding: 8px 16px; font-size: 0.9rem;">🔍 Auto-Fill</button>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <input type="url" id="propertyUrl" name="url" required placeholder="https://www.daft.ie/ or myhome.ie/..." style="flex: 1; min-width: 200px;">
+                        <button type="button" class="btn" onclick="autoFillProperty()" style="padding: 8px 12px; font-size: 0.85rem; white-space: nowrap;">🔍 Auto-Fill</button>
                     </div>
-                    <small style="color: #666; font-size: 0.9rem;">Supports: Daft.ie, MyHome.ie, Property Partners, Sherry FitzGerald, Remax & more</small>
+                    <small style="color: #666; font-size: 0.8rem;">Supports: Daft.ie, MyHome.ie, Property Partners, Sherry FitzGerald, Remax & more</small>
                 </div>
                 <div class="form-group">
                     <label for="propertyPrice">Price</label>
@@ -309,7 +389,7 @@
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>Edit Property</h2>
+            <h2 style="margin-bottom: 15px;">Edit Property</h2>
             <form id="editForm">
                 <input type="hidden" id="editId">
                 <div class="form-group">
@@ -466,7 +546,7 @@
                 <div class="property-card">
                     ${imageUrl ? `
                         <div class="property-image">
-                            <img src="${imageUrl}" alt="Property image" style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 15px;"
+                            <img src="${imageUrl}" alt="Property image" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;"
                                  onerror="this.style.display='none'">
                         </div>
                     ` : ''}
@@ -489,10 +569,10 @@
                         <a href="${property.url}" target="_blank" class="property-link">
                             <span>🔗</span> View Property
                         </a>
-                        <button class="btn btn-secondary" onclick="openEditModal(${property.id})" style="padding: 8px 15px; font-size: 0.9rem;">
+                        <button class="btn btn-secondary" onclick="openEditModal(${property.id})" style="padding: 8px 12px; font-size: 0.85rem; flex: none;">
                             ✏️ Edit
                         </button>
-                        <button class="btn btn-danger" onclick="deleteProperty(${property.id})" style="padding: 8px 15px; font-size: 0.9rem;">
+                        <button class="btn btn-danger" onclick="deleteProperty(${property.id})" style="padding: 8px 12px; font-size: 0.85rem; flex: none;">
                             🗑️ Delete
                         </button>
                     </div>
@@ -524,14 +604,6 @@
                 return;
             }
 
-            // Check if it's a supported property site
-            const supportedSites = ['daft.ie', 'myhome.ie', 'propertypartners.ie', 'sherry.ie', 'remax.ie'];
-            const isSupported = supportedSites.some(site => url.includes(site));
-
-            if (!isSupported) {
-                showAlert('This site may not be fully supported, but we\'ll try to extract basic information');
-            }
-
             // Show loading state
             const button = event.target;
             const originalText = button.innerHTML;
@@ -539,8 +611,6 @@
             button.disabled = true;
 
             try {
-                console.log('Attempting to fetch property data from:', url);
-
                 const response = await fetch('property_scraper.php', {
                     method: 'POST',
                     headers: {
@@ -549,14 +619,11 @@
                     body: JSON.stringify({ url: url })
                 });
 
-                console.log('Response status:', response.status);
-
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
                 const result = await response.json();
-                console.log('Scraper result:', result);
 
                 if (result.success) {
                     // Fill form with scraped data

@@ -194,6 +194,49 @@
                 flex-direction: column;
                 align-items: stretch;
             }
+
+            .property-dropdown input,
+            .property-dropdown select {
+                min-width: auto;
+                width: 100%;
+            }
+
+            .location-form {
+                padding: 20px;
+            }
+
+            .property-info {
+                padding: 20px;
+            }
+
+            .distance-card {
+                padding: 20px;
+            }
+
+            .location-name {
+                font-size: 1.1rem;
+            }
+
+            .property-title {
+                font-size: 1.3rem;
+            }
+
+            .transport-modes {
+                gap: 10px;
+            }
+
+            .mode-box {
+                padding: 12px;
+            }
+
+            .default-locations {
+                padding: 15px;
+            }
+
+            .location-list {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
         }
     </style>
 

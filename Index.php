@@ -559,21 +559,45 @@
         document.getElementById('offerCount').textContent = stats.offer;
     }
 
+    function extractImageFromNotes(notes) {
+        if (!notes) return null;
+
+        // Look for image URL in notes
+        const imageMatch = notes.match(/Image:\s*(https?:\/\/[^\s|]+)/);
+        return imageMatch ? imageMatch[1] : null;
+    }
+
+    function cleanNotesForDisplay(notes) {
+        if (!notes) return '';
+
+        // Remove the image URL from notes for display
+        return notes.replace(/\s*\|\s*Image:\s*https?:\/\/[^\s|]+/g, '').trim();
+    }
+
     function renderProperties() {
         const grid = document.getElementById('propertiesGrid');
 
         if (properties.length === 0) {
             grid.innerHTML = `
-                    <div class="no-properties">
-                        <h3>No properties saved yet</h3>
-                        <p>Add your first property using the form above!</p>
-                    </div>
-                `;
+                <div class="no-properties">
+                    <h3>No properties saved yet</h3>
+                    <p>Add your first property using the form above!</p>
+                </div>
+            `;
             return;
         }
 
-        grid.innerHTML = properties.map(property => `
+        grid.innerHTML = properties.map(property => {
+            const imageUrl = extractImageFromNotes(property.notes);
+            return `
                 <div class="property-card">
+                    ${imageUrl ? `
+                        <div class="property-image">
+                            <img src="${imageUrl}" alt="Property image" style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 15px;"
+                                 onerror="this.style.display='none'">
+                        </div>
+                    ` : ''}
+
                     <div class="property-header">
                         <div>
                             <div class="property-title">${property.title || 'Property'}</div>
@@ -586,7 +610,7 @@
                         ${property.status.charAt(0).toUpperCase() + property.status.slice(1)}
                     </div>
 
-                    ${property.notes ? `<div class="property-notes">${property.notes}</div>` : ''}
+                    ${property.notes ? `<div class="property-notes">${cleanNotesForDisplay(property.notes)}</div>` : ''}
 
                     <div class="property-actions">
                         <a href="${property.url}" target="_blank" class="property-link">
@@ -600,7 +624,8 @@
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `;
+        }).join('');
     }
 
     function openEditModal(id) {
@@ -617,18 +642,21 @@
         document.getElementById('editModal').style.display = 'block';
     }
 
-    // Auto-fill from Daft.ie
+    // Auto-fill function - THIS WAS MISSING!
     async function autoFillFromDaft() {
         const url = document.getElementById('propertyUrl').value;
 
         if (!url) {
-            showAlert('Please enter a Daft.ie URL first', 'error');
+            showAlert('Please enter a property URL first', 'error');
             return;
         }
 
-        if (!url.includes('daft.ie')) {
-            showAlert('Please enter a valid Daft.ie URL', 'error');
-            return;
+        // Check if it's a supported property site
+        const supportedSites = ['daft.ie', 'myhome.ie', 'propertypartners.ie', 'sherry.ie', 'remax.ie'];
+        const isSupported = supportedSites.some(site => url.includes(site));
+
+        if (!isSupported) {
+            showAlert('This site may not be fully supported, but we\'ll try to extract basic information');
         }
 
         // Show loading state
@@ -637,6 +665,62 @@
         button.innerHTML = '⏳ Loading...';
         button.disabled = true;
 
+        try {
+            console.log('Attempting to fetch property data from:', url);
+
+            const response = await fetch('property_scraper.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url })
+            });
+
+            console.log('Response status:', response.status);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            console.log('Scraper result:', result);
+
+            if (result.success) {
+                // Fill form with scraped data
+                if (result.data.title) {
+                    document.getElementById('propertyTitle').value = result.data.title;
+                }
+                if (result.data.price) {
+                    document.getElementById('propertyPrice').value = result.data.price;
+                }
+
+                // Build notes from scraped data (including image)
+                let notes = [];
+                if (result.data.property_type) notes.push(`Type: ${result.data.property_type}`);
+                if (result.data.bedrooms) notes.push(result.data.bedrooms);
+                if (result.data.bathrooms) notes.push(result.data.bathrooms);
+                if (result.data.address) notes.push(`Address: ${result.data.address}`);
+                if (result.data.ber_rating) notes.push(`BER: ${result.data.ber_rating}`);
+                if (result.data.image_url) notes.push(`Image: ${result.data.image_url}`);
+
+                if (notes.length > 0) {
+                    document.getElementById('propertyNotes').value = notes.join(' | ');
+                }
+
+                showAlert(`Property information auto-filled from ${result.source}!`);
+            } else {
+                showAlert('Could not extract property info: ' + result.error, 'error');
+            }
+
+        } catch (error) {
+            console.error('Scraping error:', error);
+            showAlert('Error connecting to scraper service: ' + error.message, 'error');
+        }
+
+        // Restore button
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
 
     // Event listeners
     document.getElementById('propertyForm').addEventListener('submit', async function(e) {

@@ -155,7 +155,7 @@
         }
 
         .result-card.best-rate::before {
-            content: "BEST RATE";
+            content: "BEST INITIAL RATE";
             position: absolute;
             top: -10px;
             right: 15px;
@@ -173,7 +173,7 @@
         }
 
         .result-card.lowest-cost::before {
-            content: "LOWEST TOTAL COST";
+            content: "BEST OVERALL DEAL";
             position: absolute;
             top: -10px;
             right: 15px;
@@ -313,7 +313,8 @@
             border: 1px solid #ffeaa7;
             padding: 15px;
             border-radius: 8px;
-            margin-top: 20px;
+            margin: 15px 0;
+            font-size: 0.9rem;
         }
 
         @media (max-width: 768px) {
@@ -409,103 +410,111 @@
     </div>
 
     <script>
-        // REAL DODDL RATES - Updated from your spreadsheet (10.02.2025)
+        // REAL DODDL RATES - Updated with Split Period Calculations
         const irishLenders = [
             // AVANT MONEY
             {
                 lender: "Avant",
+                standardVariableRate: 3.75, // SVR after fixed period ends
                 products: [
-                    { name: "LTV Variable", rate: 3.75, term: "Variable", maxLTV: 100, minLTV: 0, monthlyPayment: 1575 },
-                    { name: "3 Year Fixed", rate: 3.60, term: "3 Year Fixed", maxLTV: 100, minLTV: 0, monthlyPayment: 1546 },
-                    { name: "4 Year Fixed", rate: 3.40, term: "4 Year Fixed", maxLTV: 100, minLTV: 0, monthlyPayment: 1508 },
-                    { name: "5 Year Fixed", rate: 3.80, term: "5 Year Fixed", maxLTV: 100, minLTV: 0, monthlyPayment: 1584 },
-                    { name: "7 Year Fixed", rate: 3.80, term: "7 Year Fixed", maxLTV: 100, minLTV: 0, monthlyPayment: 1584 },
-                    { name: "10 Year Fixed", rate: 3.80, term: "10 Year Fixed", maxLTV: 100, minLTV: 0, monthlyPayment: 1584 },
-                    { name: "15 Year Fixed", rate: 3.40, term: "15 Year Fixed", maxLTV: 100, minLTV: 0, monthlyPayment: 1508 },
-                    { name: "20 Year Fixed", rate: 3.40, term: "20 Year Fixed", maxLTV: 100, minLTV: 0, monthlyPayment: 1508 },
-                    { name: "25 Year Fixed", rate: 3.40, term: "25 Year Fixed", maxLTV: 100, minLTV: 0, monthlyPayment: 1508 },
-                    { name: "30 Year Fixed", rate: 3.40, term: "30 Year Fixed", maxLTV: 100, minLTV: 0, monthlyPayment: 1508 }
+                    { name: "LTV Variable", rate: 3.75, term: "Variable", fixedYears: 0, maxLTV: 100, minLTV: 0, monthlyPayment: 1575 },
+                    { name: "3 Year Fixed", rate: 3.60, term: "3 Year Fixed", fixedYears: 3, maxLTV: 100, minLTV: 0, monthlyPayment: 1546 },
+                    { name: "4 Year Fixed", rate: 3.40, term: "4 Year Fixed", fixedYears: 4, maxLTV: 100, minLTV: 0, monthlyPayment: 1508 },
+                    { name: "5 Year Fixed", rate: 3.80, term: "5 Year Fixed", fixedYears: 5, maxLTV: 100, minLTV: 0, monthlyPayment: 1584 },
+                    { name: "7 Year Fixed", rate: 3.80, term: "7 Year Fixed", fixedYears: 7, maxLTV: 100, minLTV: 0, monthlyPayment: 1584 },
+                    { name: "10 Year Fixed", rate: 3.80, term: "10 Year Fixed", fixedYears: 10, maxLTV: 100, minLTV: 0, monthlyPayment: 1584 },
+                    { name: "15 Year Fixed", rate: 3.40, term: "15 Year Fixed", fixedYears: 15, maxLTV: 100, minLTV: 0, monthlyPayment: 1508 },
+                    { name: "20 Year Fixed", rate: 3.40, term: "20 Year Fixed", fixedYears: 20, maxLTV: 100, minLTV: 0, monthlyPayment: 1508 },
+                    { name: "25 Year Fixed", rate: 3.40, term: "25 Year Fixed", fixedYears: 25, maxLTV: 100, minLTV: 0, monthlyPayment: 1508 },
+                    { name: "30 Year Fixed", rate: 3.40, term: "30 Year Fixed", fixedYears: 30, maxLTV: 100, minLTV: 0, monthlyPayment: 1508 }
                 ]
             },
             // PERMANENT TSB
             {
                 lender: "Permanent TSB",
+                standardVariableRate: 4.70, // Their standard variable rate
                 products: [
-                    { name: "Standard Variable", rate: 4.70, term: "Variable", maxLTV: 90, minLTV: 0, monthlyPayment: 1763 },
-                    { name: "LTV Variable", rate: 4.50, term: "Variable", maxLTV: 100, minLTV: 90, monthlyPayment: 1723 },
-                    { name: "2 Year Fixed", rate: 4.20, term: "2 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1663 },
-                    { name: "3 Year Fixed", rate: 3.80, term: "3 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1584 },
-                    { name: "HVM >250K 3 Year", rate: 3.55, term: "3 Year Fixed", maxLTV: 70, minLTV: 0, monthlyPayment: 1536 },
-                    { name: "4 Year Fixed", rate: 3.40, term: "4 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1508 },
-                    { name: "Green 3 Year", rate: 3.60, term: "3 Year Fixed", maxLTV: 80, minLTV: 0, monthlyPayment: 1546 },
-                    { name: "Green 5 Year", rate: 3.60, term: "5 Year Fixed", maxLTV: 80, minLTV: 0, monthlyPayment: 1546 },
-                    { name: "Green HVM >250K", rate: 3.50, term: "Fixed", maxLTV: 70, minLTV: 0, monthlyPayment: 1527 }
+                    { name: "Standard Variable", rate: 4.70, term: "Variable", fixedYears: 0, maxLTV: 90, minLTV: 0, monthlyPayment: 1763 },
+                    { name: "LTV Variable", rate: 4.50, term: "Variable", fixedYears: 0, maxLTV: 100, minLTV: 90, monthlyPayment: 1723 },
+                    { name: "2 Year Fixed", rate: 4.20, term: "2 Year Fixed", fixedYears: 2, maxLTV: 90, minLTV: 0, monthlyPayment: 1663 },
+                    { name: "3 Year Fixed", rate: 3.80, term: "3 Year Fixed", fixedYears: 3, maxLTV: 90, minLTV: 0, monthlyPayment: 1584 },
+                    { name: "HVM >250K 3 Year", rate: 3.55, term: "3 Year Fixed", fixedYears: 3, maxLTV: 70, minLTV: 0, monthlyPayment: 1536 },
+                    { name: "4 Year Fixed", rate: 3.40, term: "4 Year Fixed", fixedYears: 4, maxLTV: 90, minLTV: 0, monthlyPayment: 1508 },
+                    { name: "Green 3 Year", rate: 3.60, term: "3 Year Fixed", fixedYears: 3, maxLTV: 80, minLTV: 0, monthlyPayment: 1546 },
+                    { name: "Green 5 Year", rate: 3.60, term: "5 Year Fixed", fixedYears: 5, maxLTV: 80, minLTV: 0, monthlyPayment: 1546 },
+                    { name: "Green HVM >250K", rate: 3.50, term: "Fixed", fixedYears: 30, maxLTV: 70, minLTV: 0, monthlyPayment: 1527 }
                 ]
             },
             // HAVEN (AIB GROUP)
             {
                 lender: "Haven (AIB Group)",
+                standardVariableRate: 4.15, // Their standard variable rate
                 products: [
-                    { name: "Standard Variable", rate: 4.15, term: "Variable", maxLTV: 90, minLTV: 0, monthlyPayment: 1653 },
-                    { name: "LTV Variable", rate: 3.95, term: "Variable", maxLTV: 100, minLTV: 90, monthlyPayment: 1613 },
-                    { name: "1 Year Fixed", rate: 4.55, term: "1 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1733 },
-                    { name: "2 Year Fixed", rate: 4.65, term: "2 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1753 },
-                    { name: "3 Year Fixed", rate: 4.75, term: "3 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1774 },
-                    { name: "5 Year Fixed", rate: 4.85, term: "5 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1794 },
-                    { name: "7 Year Fixed", rate: 5.05, term: "7 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1836 },
-                    { name: "10 Year Fixed", rate: 5.15, term: "10 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1856 },
-                    { name: "Green 4 Year", rate: 3.45, term: "4 Year Fixed", maxLTV: 80, minLTV: 0, monthlyPayment: 1517 }
+                    { name: "Standard Variable", rate: 4.15, term: "Variable", fixedYears: 0, maxLTV: 90, minLTV: 0, monthlyPayment: 1653 },
+                    { name: "LTV Variable", rate: 3.95, term: "Variable", fixedYears: 0, maxLTV: 100, minLTV: 90, monthlyPayment: 1613 },
+                    { name: "1 Year Fixed", rate: 4.55, term: "1 Year Fixed", fixedYears: 1, maxLTV: 90, minLTV: 0, monthlyPayment: 1733 },
+                    { name: "2 Year Fixed", rate: 4.65, term: "2 Year Fixed", fixedYears: 2, maxLTV: 90, minLTV: 0, monthlyPayment: 1753 },
+                    { name: "3 Year Fixed", rate: 4.75, term: "3 Year Fixed", fixedYears: 3, maxLTV: 90, minLTV: 0, monthlyPayment: 1774 },
+                    { name: "5 Year Fixed", rate: 4.85, term: "5 Year Fixed", fixedYears: 5, maxLTV: 90, minLTV: 0, monthlyPayment: 1794 },
+                    { name: "7 Year Fixed", rate: 5.05, term: "7 Year Fixed", fixedYears: 7, maxLTV: 90, minLTV: 0, monthlyPayment: 1836 },
+                    { name: "10 Year Fixed", rate: 5.15, term: "10 Year Fixed", fixedYears: 10, maxLTV: 90, minLTV: 0, monthlyPayment: 1856 },
+                    { name: "Green 4 Year", rate: 3.45, term: "4 Year Fixed", fixedYears: 4, maxLTV: 80, minLTV: 0, monthlyPayment: 1517 }
                 ]
             },
             // BANK OF IRELAND
             {
                 lender: "Bank of Ireland",
+                standardVariableRate: 4.15, // Their standard variable rate
                 products: [
-                    { name: "Standard Variable", rate: 4.15, term: "Variable", maxLTV: 90, minLTV: 0, monthlyPayment: 1653 },
-                    { name: "1 Year Fixed", rate: 3.35, term: "1 Year Fixed", maxLTV: 80, minLTV: 0, monthlyPayment: 1498 },
-                    { name: "2 Year Fixed", rate: 3.85, term: "2 Year Fixed", maxLTV: 80, minLTV: 0, monthlyPayment: 1594 },
-                    { name: "3 Year Fixed", rate: 3.95, term: "3 Year Fixed", maxLTV: 80, minLTV: 0, monthlyPayment: 1613 },
-                    { name: "Eco Saver 2 Year", rate: 3.15, term: "2 Year Fixed", maxLTV: 70, minLTV: 0, monthlyPayment: 1461 },
-                    { name: "Eco Saver 3 Year", rate: 3.45, term: "3 Year Fixed", maxLTV: 70, minLTV: 0, monthlyPayment: 1517 },
-                    { name: "Eco Saver 5 Year", rate: 3.50, term: "5 Year Fixed", maxLTV: 70, minLTV: 0, monthlyPayment: 1527 },
-                    { name: "15 Year Fixed", rate: 4.25, term: "15 Year Fixed", maxLTV: 80, minLTV: 0, monthlyPayment: 1673 }
+                    { name: "Standard Variable", rate: 4.15, term: "Variable", fixedYears: 0, maxLTV: 90, minLTV: 0, monthlyPayment: 1653 },
+                    { name: "1 Year Fixed", rate: 3.35, term: "1 Year Fixed", fixedYears: 1, maxLTV: 80, minLTV: 0, monthlyPayment: 1498 },
+                    { name: "2 Year Fixed", rate: 3.85, term: "2 Year Fixed", fixedYears: 2, maxLTV: 80, minLTV: 0, monthlyPayment: 1594 },
+                    { name: "3 Year Fixed", rate: 3.95, term: "3 Year Fixed", fixedYears: 3, maxLTV: 80, minLTV: 0, monthlyPayment: 1613 },
+                    { name: "Eco Saver 2 Year", rate: 3.15, term: "2 Year Fixed", fixedYears: 2, maxLTV: 70, minLTV: 0, monthlyPayment: 1461 },
+                    { name: "Eco Saver 3 Year", rate: 3.45, term: "3 Year Fixed", fixedYears: 3, maxLTV: 70, minLTV: 0, monthlyPayment: 1517 },
+                    { name: "Eco Saver 5 Year", rate: 3.50, term: "5 Year Fixed", fixedYears: 5, maxLTV: 70, minLTV: 0, monthlyPayment: 1527 },
+                    { name: "15 Year Fixed", rate: 4.25, term: "15 Year Fixed", fixedYears: 15, maxLTV: 80, minLTV: 0, monthlyPayment: 1673 }
                 ]
             },
             // FINANCE IRELAND
             {
                 lender: "Finance Ireland",
+                standardVariableRate: 5.90, // Their standard variable rate
                 products: [
-                    { name: "Standard Variable", rate: 5.90, term: "Variable", maxLTV: 90, minLTV: 0, monthlyPayment: 2017 },
-                    { name: "LTV Variable", rate: 5.70, term: "Variable", maxLTV: 100, minLTV: 90, monthlyPayment: 1973 },
-                    { name: "3 Year Fixed", rate: 5.80, term: "3 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1995 },
-                    { name: "5 Year Fixed", rate: 5.60, term: "5 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1952 }
+                    { name: "Standard Variable", rate: 5.90, term: "Variable", fixedYears: 0, maxLTV: 90, minLTV: 0, monthlyPayment: 2017 },
+                    { name: "LTV Variable", rate: 5.70, term: "Variable", fixedYears: 0, maxLTV: 100, minLTV: 90, monthlyPayment: 1973 },
+                    { name: "3 Year Fixed", rate: 5.80, term: "3 Year Fixed", fixedYears: 3, maxLTV: 90, minLTV: 0, monthlyPayment: 1995 },
+                    { name: "5 Year Fixed", rate: 5.60, term: "5 Year Fixed", fixedYears: 5, maxLTV: 90, minLTV: 0, monthlyPayment: 1952 }
                 ]
             },
             // ICS MORTGAGES
             {
                 lender: "ICS Mortgages",
+                standardVariableRate: 4.99, // Their standard variable rate
                 products: [
-                    { name: "Standard Variable", rate: 4.99, term: "Variable", maxLTV: 90, minLTV: 0, monthlyPayment: 1823 },
-                    { name: "LTV Variable", rate: 4.99, term: "Variable", maxLTV: 100, minLTV: 90, monthlyPayment: 1823 },
-                    { name: "3 Year Fixed", rate: 4.25, term: "3 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1673 },
-                    { name: "5 Year Fixed", rate: 4.25, term: "5 Year Fixed", maxLTV: 90, minLTV: 0, monthlyPayment: 1673 }
+                    { name: "Standard Variable", rate: 4.99, term: "Variable", fixedYears: 0, maxLTV: 90, minLTV: 0, monthlyPayment: 1823 },
+                    { name: "LTV Variable", rate: 4.99, term: "Variable", fixedYears: 0, maxLTV: 100, minLTV: 90, monthlyPayment: 1823 },
+                    { name: "3 Year Fixed", rate: 4.25, term: "3 Year Fixed", fixedYears: 3, maxLTV: 90, minLTV: 0, monthlyPayment: 1673 },
+                    { name: "5 Year Fixed", rate: 4.25, term: "5 Year Fixed", fixedYears: 5, maxLTV: 90, minLTV: 0, monthlyPayment: 1673 }
                 ]
             },
             // MOCO
             {
                 lender: "MoCo",
+                standardVariableRate: 3.95, // Their standard variable rate
                 products: [
-                    { name: "LTV Variable", rate: 3.95, term: "Variable", maxLTV: 100, minLTV: 0, monthlyPayment: 1613 },
-                    { name: "3 Year Fixed", rate: 3.65, term: "3 Year Fixed", maxLTV: 100, minLTV: 0, monthlyPayment: 1555 },
-                    { name: "5 Year Fixed", rate: 3.65, term: "5 Year Fixed", maxLTV: 100, minLTV: 0, monthlyPayment: 1555 }
+                    { name: "LTV Variable", rate: 3.95, term: "Variable", fixedYears: 0, maxLTV: 100, minLTV: 0, monthlyPayment: 1613 },
+                    { name: "3 Year Fixed", rate: 3.65, term: "3 Year Fixed", fixedYears: 3, maxLTV: 100, minLTV: 0, monthlyPayment: 1555 },
+                    { name: "5 Year Fixed", rate: 3.65, term: "5 Year Fixed", fixedYears: 5, maxLTV: 100, minLTV: 0, monthlyPayment: 1555 }
                 ]
             },
             // NUA MONEY
             {
                 lender: "Nua Money",
+                standardVariableRate: 4.15, // Assuming similar to market
                 products: [
-                    { name: "3 Year Fixed", rate: 4.15, term: "3 Year Fixed", maxLTV: 80, minLTV: 0, monthlyPayment: 1653 },
-                    { name: "5 Year Fixed", rate: 4.05, term: "5 Year Fixed", maxLTV: 80, minLTV: 0, monthlyPayment: 1633 }
+                    { name: "3 Year Fixed", rate: 4.15, term: "3 Year Fixed", fixedYears: 3, maxLTV: 80, minLTV: 0, monthlyPayment: 1653 },
+                    { name: "5 Year Fixed", rate: 4.05, term: "5 Year Fixed", fixedYears: 5, maxLTV: 80, minLTV: 0, monthlyPayment: 1633 }
                 ]
             }
         ];
@@ -546,6 +555,43 @@
                 (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
         }
 
+        function calculateSplitPeriodMortgage(mortgageAmount, fixedRate, fixedYears, variableRate, totalYears) {
+            // Calculate fixed period payment
+            const fixedMonthlyPayment = calculateMonthlyPayment(mortgageAmount, fixedRate, totalYears);
+            const fixedMonthlyRate = fixedRate / 100 / 12;
+            const fixedPayments = fixedYears * 12;
+
+            // Calculate remaining balance after fixed period
+            let remainingBalance = mortgageAmount;
+            for (let month = 0; month < fixedPayments; month++) {
+                const interestPayment = remainingBalance * fixedMonthlyRate;
+                const principalPayment = fixedMonthlyPayment - interestPayment;
+                remainingBalance -= principalPayment;
+            }
+
+            // Calculate variable period payment for remaining balance
+            const remainingYears = totalYears - fixedYears;
+            const variableMonthlyPayment = calculateMonthlyPayment(remainingBalance, variableRate, remainingYears);
+
+            // Calculate total costs
+            const fixedPeriodCost = fixedMonthlyPayment * fixedPayments;
+            const variablePeriodCost = variableMonthlyPayment * (remainingYears * 12);
+            const totalCost = fixedPeriodCost + variablePeriodCost;
+            const totalInterest = totalCost - mortgageAmount;
+
+            return {
+                fixedMonthlyPayment,
+                variableMonthlyPayment,
+                fixedPeriodCost,
+                variablePeriodCost,
+                totalCost,
+                totalInterest,
+                remainingBalance,
+                fixedYears,
+                remainingYears
+            };
+        }
+
         function getApplicableProducts(ltv) {
             let applicableProducts = [];
 
@@ -554,6 +600,7 @@
                     if (ltv <= product.maxLTV && ltv >= product.minLTV) {
                         applicableProducts.push({
                             lender: lender.lender,
+                            standardVariableRate: lender.standardVariableRate,
                             ...product
                         });
                     }
@@ -586,46 +633,67 @@
                 return;
             }
 
-            // For 30-year term, use the Doddl monthly payment directly
-            // For other terms, calculate using the rate
+            // Calculate all products with split period logic
             let calculations = applicableProducts.map(product => {
-                let monthlyPayment;
+                let monthlyPayment, totalPaid, totalInterest;
+                let splitPeriodData = null;
 
-                if (years === 30) {
-                    // Use Doddl's precalculated payment for 30 years
-                    // Scale it based on actual mortgage amount vs Doddl's €340k
-                    const doddlMortgage = 340000;
-                    monthlyPayment = (product.monthlyPayment * mortgageAmount) / doddlMortgage;
+                // Check if this is a fixed-rate product that will revert to variable
+                const needsSplitCalculation = product.fixedYears > 0 && product.fixedYears < years;
+
+                if (needsSplitCalculation) {
+                    // Find the lender's standard variable rate
+                    const lender = irishLenders.find(l => l.lender === product.lender);
+                    const variableRate = lender ? lender.standardVariableRate : product.rate + 1; // fallback
+
+                    splitPeriodData = calculateSplitPeriodMortgage(
+                        mortgageAmount,
+                        product.rate,
+                        product.fixedYears,
+                        variableRate,
+                        years
+                    );
+
+                    monthlyPayment = splitPeriodData.fixedMonthlyPayment; // Show fixed period payment as primary
+                    totalPaid = splitPeriodData.totalCost;
+                    totalInterest = splitPeriodData.totalInterest;
                 } else {
-                    // Calculate for other terms using the rate
-                    monthlyPayment = calculateMonthlyPayment(mortgageAmount, product.rate, years);
-                }
+                    // Standard calculation for variable rates or full-term fixed rates
+                    if (years === 30) {
+                        const doddlMortgage = 340000;
+                        monthlyPayment = (product.monthlyPayment * mortgageAmount) / doddlMortgage;
+                    } else {
+                        monthlyPayment = calculateMonthlyPayment(mortgageAmount, product.rate, years);
+                    }
 
-                const totalPaid = monthlyPayment * years * 12;
-                const totalInterest = totalPaid - mortgageAmount;
+                    totalPaid = monthlyPayment * years * 12;
+                    totalInterest = totalPaid - mortgageAmount;
+                }
 
                 return {
                     ...product,
                     monthlyPayment,
                     totalPaid,
-                    totalInterest
+                    totalInterest,
+                    splitPeriodData,
+                    needsSplitCalculation
                 };
             });
 
-            // Sort by monthly payment (best rate first)
-            calculations.sort((a, b) => a.monthlyPayment - b.monthlyPayment);
+            // Sort by total cost over full term (not just monthly payment)
+            calculations.sort((a, b) => a.totalPaid - b.totalPaid);
 
             // Find best rate and lowest total cost
-            const bestRate = calculations[0];
-            const lowestTotalCost = calculations.reduce((min, current) =>
-                current.totalPaid < min.totalPaid ? current : min
+            const lowestTotalCost = calculations[0]; // Already sorted by total cost
+            const bestInitialRate = calculations.reduce((min, current) =>
+                current.rate < min.rate ? current : min
             );
 
             // Show best deal banner
             document.getElementById('bestDealTitle').textContent =
-                `Best Rate: ${bestRate.lender} ${bestRate.name} at ${bestRate.rate}%`;
+                `Best Overall Deal: ${lowestTotalCost.lender} ${lowestTotalCost.name}`;
             document.getElementById('bestDealDetails').textContent =
-                `Monthly Payment: €${bestRate.monthlyPayment.toLocaleString('en-IE', {minimumFractionDigits: 2})} | Total Cost: €${bestRate.totalPaid.toLocaleString('en-IE', {minimumFractionDigits: 0})}`;
+                `Total Cost Over ${years} Years: €${lowestTotalCost.totalPaid.toLocaleString('en-IE', {minimumFractionDigits: 0})} | Initial Rate: ${lowestTotalCost.rate}%${lowestTotalCost.needsSplitCalculation ? ' (fixed for ' + lowestTotalCost.fixedYears + ' years)' : ''}`;
             document.getElementById('bestDealBanner').style.display = 'block';
 
             // Generate result cards (show top 8 to avoid clutter)
@@ -634,8 +702,31 @@
 
             topCalculations.forEach((calc, index) => {
                 let cardClass = '';
-                if (calc === bestRate) cardClass = 'best-rate';
-                else if (calc === lowestTotalCost && calc !== bestRate) cardClass = 'lowest-cost';
+                if (calc === lowestTotalCost) cardClass = 'lowest-cost';
+                else if (calc === bestInitialRate && calc !== lowestTotalCost) cardClass = 'best-rate';
+
+                let splitPeriodHTML = '';
+                if (calc.needsSplitCalculation && calc.splitPeriodData) {
+                    const split = calc.splitPeriodData;
+                    splitPeriodHTML = `
+                    <div class="alert-warning" style="margin: 15px 0;">
+                        <strong>⚠️ Rate Changes After ${split.fixedYears} Years</strong><br>
+                        <small>After the fixed period, this mortgage reverts to the lender's standard variable rate</small>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Years 1-${split.fixedYears} (Fixed ${calc.rate.toFixed(2)}%):</span>
+                        <span>€${split.fixedMonthlyPayment.toLocaleString('en-IE', {minimumFractionDigits: 2})}/month</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Years ${split.fixedYears + 1}-${years} (Variable):</span>
+                        <span>€${split.variableMonthlyPayment.toLocaleString('en-IE', {minimumFractionDigits: 2})}/month</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Remaining Balance After ${split.fixedYears} Years:</span>
+                        <span>€${split.remainingBalance.toLocaleString('en-IE', {minimumFractionDigits: 0})}</span>
+                    </div>
+                `;
+                }
 
                 resultsHTML += `
             <div class="result-card ${cardClass}">
@@ -649,8 +740,10 @@
 
                 <div class="monthly-payment">
                     <div class="payment-amount">€${calc.monthlyPayment.toLocaleString('en-IE', {minimumFractionDigits: 2})}</div>
-                    <div class="payment-label">Monthly Payment</div>
+                    <div class="payment-label">${calc.needsSplitCalculation ? `Initial Monthly Payment (${calc.splitPeriodData.fixedYears} years)` : 'Monthly Payment'}</div>
                 </div>
+
+                ${splitPeriodHTML}
 
                 <div class="breakdown-item">
                     <span>Rate Type:</span>
@@ -676,22 +769,21 @@
             document.getElementById('resultsSection').style.display = 'grid';
 
             // Generate summary comparison
-            const worstRate = calculations[calculations.length - 1];
-            const monthlyDifference = worstRate.monthlyPayment - bestRate.monthlyPayment;
-            const lifetimeDifference = worstRate.totalPaid - bestRate.totalPaid;
+            const worstTotalCost = calculations[calculations.length - 1];
+            const lifetimeDifference = worstTotalCost.totalPaid - lowestTotalCost.totalPaid;
 
             const comparisonHTML = `
-        <div class="comparison-item">
-            <div class="comparison-value">€${bestRate.monthlyPayment.toLocaleString('en-IE', {minimumFractionDigits: 2})}</div>
-            <div class="comparison-label">Best Monthly Payment<br>(${bestRate.lender})</div>
-        </div>
         <div class="comparison-item">
             <div class="comparison-value">€${lowestTotalCost.totalPaid.toLocaleString('en-IE', {minimumFractionDigits: 0})}</div>
             <div class="comparison-label">Lowest Total Cost<br>(${lowestTotalCost.lender})</div>
         </div>
         <div class="comparison-item">
-            <div class="comparison-value">${bestRate.rate.toFixed(2)}%</div>
-            <div class="comparison-label">Best Interest Rate<br>(${bestRate.lender})</div>
+            <div class="comparison-value">€${bestInitialRate.monthlyPayment.toLocaleString('en-IE', {minimumFractionDigits: 2})}</div>
+            <div class="comparison-label">Best Initial Rate<br>(${bestInitialRate.lender} - ${bestInitialRate.rate}%)</div>
+        </div>
+        <div class="comparison-item">
+            <div class="comparison-value">${lowestTotalCost.needsSplitCalculation ? lowestTotalCost.splitPeriodData.fixedYears + ' yr fixed' : 'Full term'}</div>
+            <div class="comparison-label">Best Deal Fixed Period<br>(${lowestTotalCost.lender})</div>
         </div>
         <div class="comparison-item">
             <div class="comparison-value">${applicableProducts.length}</div>
@@ -701,9 +793,9 @@
 
             const savingsHTML = `
         <div class="savings-amount">Save €${lifetimeDifference.toLocaleString('en-IE', {minimumFractionDigits: 0})}</div>
-        <div>By choosing the best rate vs worst rate over ${years} years</div>
+        <div>By choosing the best overall deal vs worst deal over ${years} years</div>
         <div style="margin-top: 10px; font-size: 0.9rem;">
-            Monthly difference: €${monthlyDifference.toLocaleString('en-IE', {minimumFractionDigits: 2})}
+            Best deal: ${lowestTotalCost.lender} ${lowestTotalCost.name}
         </div>
     `;
 
@@ -725,7 +817,5 @@
         updateLTV();
         calculatePayments(); // Show initial calculation with your example
     </script>
-
-
 
 <?php include 'footer.php'; ?>

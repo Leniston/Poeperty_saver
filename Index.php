@@ -1,26 +1,6 @@
-<<<<<<< HEAD
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0
-	<!-- Mobile App-like experience -->
-	
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-	
-	<meta name="apple-mobile-web-app-title" content="Property Saver">
-	
-	<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🀀􈀀</text></svg>">
-	
-	
-    <title>Property Saver</title>
-=======
 <?php include 'header.php'; ?>
 
     <!-- Page-specific styles -->
->>>>>>> 64054d96cf1d0ca5b477f098d2f7f5045f2450b1
     <style>
         .form-group {
             margin-bottom: 25px;
@@ -255,17 +235,6 @@
             }
         }
     </style>
-<<<<<<< HEAD
-</head>
-<body>
-<div class="container">
-    <div class="header">
-        <h1>🏠 Property Saver</h1>
-        <p>Keep track of all  property searches in one place</p>
-		<p>Cause Daft's save function is too simple </P>
-    </div>
-=======
->>>>>>> 64054d96cf1d0ca5b477f098d2f7f5045f2450b1
 
     <div class="content-section">
         <h2 style="margin-bottom: 25px; color: #333;">Add New Property</h2>

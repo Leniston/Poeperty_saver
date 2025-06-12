@@ -228,7 +228,7 @@
             </div>
 
             <button class="btn" onclick="analyzeLocation()" style="width: 100%; margin-top: 20px;">
-                🔍 Analyze Travel Times (FREE)
+                🔍 Analyze Travel Times
             </button>
         </div>
     </div>

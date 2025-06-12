@@ -1,59 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Property Saver</title>
+<?php include 'header.php'; ?>
+
+    <!-- Page-specific styles -->
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .add-property {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            margin-bottom: 40px;
-            transform: translateY(0);
-            transition: transform 0.3s ease;
-        }
-
-        .add-property:hover {
-            transform: translateY(-5px);
-        }
-
         .form-group {
             margin-bottom: 25px;
         }
@@ -96,44 +44,6 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-        }
-
-        .btn-danger {
-            background: #dc3545;
         }
 
         .properties-grid {
@@ -313,56 +223,30 @@
             color: #999;
         }
 
-        .alert {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
         .loading {
             text-align: center;
             color: white;
             padding: 20px;
         }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
-</head>
-<body>
-<div class="container">
-    <div class="header">
-        <h1>🏠 Property Saver</h1>
-        <p>Keep track of all your property searches in one place</p>
-    </div>
 
-    <div style="text-align: center; margin-bottom: 30px;">
-        <a href="index.php" style="display: inline-block; background: rgba(255,255,255,0.3); color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; margin: 0 10px; backdrop-filter: blur(10px);">🏠 Property Saver</a>
-        <a href="calculator.php" style="display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; margin: 0 10px; backdrop-filter: blur(10px);">💰 Calculator</a>
-    </div>
-
-    <div id="alert" class="alert"></div>
-
-    <div class="add-property">
+    <div class="content-section">
         <h2 style="margin-bottom: 25px; color: #333;">Add New Property</h2>
         <form id="propertyForm">
             <div class="form-row">
                 <div class="form-group">
                     <label for="propertyUrl">Property URL *</label>
                     <div style="display: flex; gap: 10px;">
-                        <input type="url" id="propertyUrl" name="url" required placeholder="https://www.daft.ie/..." style="flex: 1;">
-                        <button type="button" class="btn" onclick="autoFillFromDaft()" style="padding: 8px 16px; font-size: 0.9rem;">🔍 Auto-Fill</button>
+                        <input type="url" id="propertyUrl" name="url" required placeholder="https://www.daft.ie/ or myhome.ie/ or any property site..." style="flex: 1;">
+                        <button type="button" class="btn" onclick="autoFillProperty()" style="padding: 8px 16px; font-size: 0.9rem;">🔍 Auto-Fill</button>
                     </div>
+                    <small style="color: #666; font-size: 0.9rem;">Supports: Daft.ie, MyHome.ie, Property Partners, Sherry FitzGerald, Remax & more</small>
                 </div>
                 <div class="form-group">
                     <label for="propertyPrice">Price</label>
@@ -420,176 +304,165 @@
 
     <div class="properties-grid" id="propertiesGrid" style="display: none;">
     </div>
-</div>
 
-<!-- Edit Modal -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Edit Property</h2>
-        <form id="editForm">
-            <input type="hidden" id="editId">
-            <div class="form-group">
-                <label for="editUrl">Property URL</label>
-                <input type="url" id="editUrl" name="url" required>
-            </div>
-            <div class="form-group">
-                <label for="editTitle">Title</label>
-                <input type="text" id="editTitle" name="title">
-            </div>
-            <div class="form-group">
-                <label for="editPrice">Price</label>
-                <input type="text" id="editPrice" name="price">
-            </div>
-            <div class="form-group">
-                <label for="editStatus">Status</label>
-                <select id="editStatus" name="status">
-                    <option value="interested">Interested</option>
-                    <option value="viewing">Viewing Scheduled</option>
-                    <option value="offer">Offer Made</option>
-                    <option value="rejected">Rejected/Passed</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="editNotes">Notes</label>
-                <textarea id="editNotes" name="notes"></textarea>
-            </div>
-            <button type="submit" class="btn">Update Property</button>
-        </form>
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit Property</h2>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label for="editUrl">Property URL</label>
+                    <input type="url" id="editUrl" name="url" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTitle">Title</label>
+                    <input type="text" id="editTitle" name="title">
+                </div>
+                <div class="form-group">
+                    <label for="editPrice">Price</label>
+                    <input type="text" id="editPrice" name="price">
+                </div>
+                <div class="form-group">
+                    <label for="editStatus">Status</label>
+                    <select id="editStatus" name="status">
+                        <option value="interested">Interested</option>
+                        <option value="viewing">Viewing Scheduled</option>
+                        <option value="offer">Offer Made</option>
+                        <option value="rejected">Rejected/Passed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editNotes">Notes</label>
+                    <textarea id="editNotes" name="notes"></textarea>
+                </div>
+                <button type="submit" class="btn">Update Property</button>
+            </form>
+        </div>
     </div>
-</div>
 
-<script>
-    let properties = [];
+    <script>
+        let properties = [];
 
-    function showAlert(message, type = 'success') {
-        const alert = document.getElementById('alert');
-        alert.className = `alert alert-${type}`;
-        alert.textContent = message;
-        alert.style.display = 'block';
-        setTimeout(() => {
-            alert.style.display = 'none';
-        }, 3000);
-    }
-
-    async function apiCall(endpoint, method = 'GET', data = null) {
-        try {
-            const options = {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            };
-
-            if (data) {
-                options.body = JSON.stringify(data);
-            }
-
-            const response = await fetch(`backend.php?endpoint=${endpoint}`, options);
-            const result = await response.json();
-
-            if (!result.success) {
-                throw new Error(result.error || 'Unknown error');
-            }
-
-            return result;
-        } catch (error) {
-            console.error('API Error:', error);
-            showAlert('Error: ' + error.message, 'error');
-            throw error;
-        }
-    }
-
-    async function loadProperties() {
-        try {
-            const result = await apiCall('properties');
-            properties = result.data || [];
-            renderProperties();
-            updateStats();
-            document.getElementById('loadingMessage').style.display = 'none';
-            document.getElementById('propertiesGrid').style.display = 'grid';
-        } catch (error) {
-            document.getElementById('loadingMessage').textContent = 'Error loading properties. Check if database is set up.';
-        }
-    }
-
-    async function addProperty(propertyData) {
-        try {
-            await apiCall('properties', 'POST', propertyData);
-            await loadProperties();
-            showAlert('Property saved successfully!');
-        } catch (error) {
-            // Handle error
-        }
-    }
-
-    async function editProperty(id, propertyData) {
-        try {
-            await apiCall('properties', 'PUT', { ...propertyData, id: id });
-            await loadProperties();
-            showAlert('Property updated successfully!');
-        } catch (error) {
-            // Handle error
-        }
-    }
-
-    async function deleteProperty(id) {
-        if (confirm('Are you sure you want to delete this property?')) {
+        async function apiCall(endpoint, method = 'GET', data = null) {
             try {
-                await apiCall('properties', 'DELETE', { id: id });
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(`backend.php?endpoint=${endpoint}`, options);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.error || 'Unknown error');
+                }
+
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                showAlert('Error: ' + error.message, 'error');
+                throw error;
+            }
+        }
+
+        async function loadProperties() {
+            try {
+                const result = await apiCall('properties');
+                properties = result.data || [];
+                renderProperties();
+                updateStats();
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('propertiesGrid').style.display = 'grid';
+            } catch (error) {
+                document.getElementById('loadingMessage').textContent = 'Error loading properties. Check if database is set up.';
+            }
+        }
+
+        async function addProperty(propertyData) {
+            try {
+                await apiCall('properties', 'POST', propertyData);
                 await loadProperties();
-                showAlert('Property deleted successfully!');
+                showAlert('Property saved successfully!');
             } catch (error) {
                 // Handle error
             }
         }
-    }
 
-    function updateStats() {
-        const stats = {
-            total: properties.length,
-            interested: properties.filter(p => p.status === 'interested').length,
-            viewing: properties.filter(p => p.status === 'viewing').length,
-            offer: properties.filter(p => p.status === 'offer').length
-        };
+        async function editProperty(id, propertyData) {
+            try {
+                await apiCall('properties', 'PUT', { ...propertyData, id: id });
+                await loadProperties();
+                showAlert('Property updated successfully!');
+            } catch (error) {
+                // Handle error
+            }
+        }
 
-        document.getElementById('totalProperties').textContent = stats.total;
-        document.getElementById('interestedCount').textContent = stats.interested;
-        document.getElementById('viewingCount').textContent = stats.viewing;
-        document.getElementById('offerCount').textContent = stats.offer;
-    }
+        async function deleteProperty(id) {
+            if (confirm('Are you sure you want to delete this property?')) {
+                try {
+                    await apiCall('properties', 'DELETE', { id: id });
+                    await loadProperties();
+                    showAlert('Property deleted successfully!');
+                } catch (error) {
+                    // Handle error
+                }
+            }
+        }
 
-    function extractImageFromNotes(notes) {
-        if (!notes) return null;
+        function updateStats() {
+            const stats = {
+                total: properties.length,
+                interested: properties.filter(p => p.status === 'interested').length,
+                viewing: properties.filter(p => p.status === 'viewing').length,
+                offer: properties.filter(p => p.status === 'offer').length
+            };
 
-        // Look for image URL in notes
-        const imageMatch = notes.match(/Image:\s*(https?:\/\/[^\s|]+)/);
-        return imageMatch ? imageMatch[1] : null;
-    }
+            document.getElementById('totalProperties').textContent = stats.total;
+            document.getElementById('interestedCount').textContent = stats.interested;
+            document.getElementById('viewingCount').textContent = stats.viewing;
+            document.getElementById('offerCount').textContent = stats.offer;
+        }
 
-    function cleanNotesForDisplay(notes) {
-        if (!notes) return '';
+        function extractImageFromNotes(notes) {
+            if (!notes) return null;
 
-        // Remove the image URL from notes for display
-        return notes.replace(/\s*\|\s*Image:\s*https?:\/\/[^\s|]+/g, '').trim();
-    }
+            // Look for image URL in notes
+            const imageMatch = notes.match(/Image:\s*(https?:\/\/[^\s|]+)/);
+            return imageMatch ? imageMatch[1] : null;
+        }
 
-    function renderProperties() {
-        const grid = document.getElementById('propertiesGrid');
+        function cleanNotesForDisplay(notes) {
+            if (!notes) return '';
 
-        if (properties.length === 0) {
-            grid.innerHTML = `
+            // Remove the image URL from notes for display
+            return notes.replace(/\s*\|\s*Image:\s*https?:\/\/[^\s|]+/g, '').trim();
+        }
+
+        function renderProperties() {
+            const grid = document.getElementById('propertiesGrid');
+
+            if (properties.length === 0) {
+                grid.innerHTML = `
                 <div class="no-properties">
                     <h3>No properties saved yet</h3>
                     <p>Add your first property using the form above!</p>
                 </div>
             `;
-            return;
-        }
+                return;
+            }
 
-        grid.innerHTML = properties.map(property => {
-            const imageUrl = extractImageFromNotes(property.notes);
-            return `
+            grid.innerHTML = properties.map(property => {
+                const imageUrl = extractImageFromNotes(property.notes);
+                return `
                 <div class="property-card">
                     ${imageUrl ? `
                         <div class="property-image">
@@ -625,136 +498,136 @@
                     </div>
                 </div>
             `;
-        }).join('');
-    }
-
-    function openEditModal(id) {
-        const property = properties.find(p => p.id == id);
-        if (!property) return;
-
-        document.getElementById('editId').value = property.id;
-        document.getElementById('editUrl').value = property.url;
-        document.getElementById('editTitle').value = property.title || '';
-        document.getElementById('editPrice').value = property.price || '';
-        document.getElementById('editStatus').value = property.status;
-        document.getElementById('editNotes').value = property.notes || '';
-
-        document.getElementById('editModal').style.display = 'block';
-    }
-
-    // Auto-fill function - THIS WAS MISSING!
-    async function autoFillFromDaft() {
-        const url = document.getElementById('propertyUrl').value;
-
-        if (!url) {
-            showAlert('Please enter a property URL first', 'error');
-            return;
+            }).join('');
         }
 
-        // Check if it's a supported property site
-        const supportedSites = ['daft.ie', 'myhome.ie', 'propertypartners.ie', 'sherry.ie', 'remax.ie'];
-        const isSupported = supportedSites.some(site => url.includes(site));
+        function openEditModal(id) {
+            const property = properties.find(p => p.id == id);
+            if (!property) return;
 
-        if (!isSupported) {
-            showAlert('This site may not be fully supported, but we\'ll try to extract basic information');
+            document.getElementById('editId').value = property.id;
+            document.getElementById('editUrl').value = property.url;
+            document.getElementById('editTitle').value = property.title || '';
+            document.getElementById('editPrice').value = property.price || '';
+            document.getElementById('editStatus').value = property.status;
+            document.getElementById('editNotes').value = property.notes || '';
+
+            document.getElementById('editModal').style.display = 'block';
         }
 
-        // Show loading state
-        const button = event.target;
-        const originalText = button.innerHTML;
-        button.innerHTML = '⏳ Loading...';
-        button.disabled = true;
+        // Auto-fill function
+        async function autoFillProperty() {
+            const url = document.getElementById('propertyUrl').value;
 
-        try {
-            console.log('Attempting to fetch property data from:', url);
-
-            const response = await fetch('property_scraper.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ url: url })
-            });
-
-            console.log('Response status:', response.status);
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            if (!url) {
+                showAlert('Please enter a property URL first', 'error');
+                return;
             }
 
-            const result = await response.json();
-            console.log('Scraper result:', result);
+            // Check if it's a supported property site
+            const supportedSites = ['daft.ie', 'myhome.ie', 'propertypartners.ie', 'sherry.ie', 'remax.ie'];
+            const isSupported = supportedSites.some(site => url.includes(site));
 
-            if (result.success) {
-                // Fill form with scraped data
-                if (result.data.title) {
-                    document.getElementById('propertyTitle').value = result.data.title;
-                }
-                if (result.data.price) {
-                    document.getElementById('propertyPrice').value = result.data.price;
-                }
-
-                // Build notes from scraped data (including image)
-                let notes = [];
-                if (result.data.property_type) notes.push(`Type: ${result.data.property_type}`);
-                if (result.data.bedrooms) notes.push(result.data.bedrooms);
-                if (result.data.bathrooms) notes.push(result.data.bathrooms);
-                if (result.data.address) notes.push(`Address: ${result.data.address}`);
-                if (result.data.ber_rating) notes.push(`BER: ${result.data.ber_rating}`);
-                if (result.data.image_url) notes.push(`Image: ${result.data.image_url}`);
-
-                if (notes.length > 0) {
-                    document.getElementById('propertyNotes').value = notes.join(' | ');
-                }
-
-                showAlert(`Property information auto-filled from ${result.source}!`);
-            } else {
-                showAlert('Could not extract property info: ' + result.error, 'error');
+            if (!isSupported) {
+                showAlert('This site may not be fully supported, but we\'ll try to extract basic information');
             }
 
-        } catch (error) {
-            console.error('Scraping error:', error);
-            showAlert('Error connecting to scraper service: ' + error.message, 'error');
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '⏳ Loading...';
+            button.disabled = true;
+
+            try {
+                console.log('Attempting to fetch property data from:', url);
+
+                const response = await fetch('property_scraper.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('Scraper result:', result);
+
+                if (result.success) {
+                    // Fill form with scraped data
+                    if (result.data.title) {
+                        document.getElementById('propertyTitle').value = result.data.title;
+                    }
+                    if (result.data.price) {
+                        document.getElementById('propertyPrice').value = result.data.price;
+                    }
+
+                    // Build notes from scraped data (including image)
+                    let notes = [];
+                    if (result.data.property_type) notes.push(`Type: ${result.data.property_type}`);
+                    if (result.data.bedrooms) notes.push(result.data.bedrooms);
+                    if (result.data.bathrooms) notes.push(result.data.bathrooms);
+                    if (result.data.address) notes.push(`Address: ${result.data.address}`);
+                    if (result.data.ber_rating) notes.push(`BER: ${result.data.ber_rating}`);
+                    if (result.data.image_url) notes.push(`Image: ${result.data.image_url}`);
+
+                    if (notes.length > 0) {
+                        document.getElementById('propertyNotes').value = notes.join(' | ');
+                    }
+
+                    showAlert(`Property information auto-filled from ${result.source}!`);
+                } else {
+                    showAlert('Could not extract property info: ' + result.error, 'error');
+                }
+
+            } catch (error) {
+                console.error('Scraping error:', error);
+                showAlert('Error connecting to scraper service: ' + error.message, 'error');
+            }
+
+            // Restore button
+            button.innerHTML = originalText;
+            button.disabled = false;
         }
 
-        // Restore button
-        button.innerHTML = originalText;
-        button.disabled = false;
-    }
+        // Event listeners
+        document.getElementById('propertyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const propertyData = Object.fromEntries(formData);
 
-    // Event listeners
-    document.getElementById('propertyForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const propertyData = Object.fromEntries(formData);
+            await addProperty(propertyData);
+            this.reset();
+        });
 
-        await addProperty(propertyData);
-        this.reset();
-    });
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const propertyData = Object.fromEntries(formData);
+            const id = document.getElementById('editId').value;
 
-    document.getElementById('editForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const propertyData = Object.fromEntries(formData);
-        const id = document.getElementById('editId').value;
+            await editProperty(id, propertyData);
+            document.getElementById('editModal').style.display = 'none';
+        });
 
-        await editProperty(id, propertyData);
-        document.getElementById('editModal').style.display = 'none';
-    });
+        document.querySelector('.close').addEventListener('click', function() {
+            document.getElementById('editModal').style.display = 'none';
+        });
 
-    document.querySelector('.close').addEventListener('click', function() {
-        document.getElementById('editModal').style.display = 'none';
-    });
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('editModal');
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
 
-    window.addEventListener('click', function(e) {
-        const modal = document.getElementById('editModal');
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
+        // Initialize
+        loadProperties();
+    </script>
 
-    // Initialize
-    loadProperties();
-</script>
-</body>
-</html>
+<?php include 'footer.php'; ?>

@@ -1,810 +1,594 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Property Saver</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<?php
+// property_scraper.php - Multi-site property information extractor
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
 
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-        }
+function scrapeProperty($url) {
+    $domain = parse_url($url, PHP_URL_HOST);
+    $domain = str_replace('www.', '', $domain);
 
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .add-property {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            margin-bottom: 40px;
-            transform: translateY(0);
-            transition: transform 0.3s ease;
-        }
-
-        .add-property:hover {
-            transform: translateY(-5px);
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 1.1rem;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-        }
-
-        .properties-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 25px;
-        }
-
-        .property-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .property-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .property-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-        }
-
-        .property-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-
-        .property-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .property-date {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        .property-price {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .property-status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .status-interested { background: #d4edda; color: #155724; }
-        .status-viewing { background: #fff3cd; color: #856404; }
-        .status-offer { background: #cce5ff; color: #004085; }
-        .status-rejected { background: #f8d7da; color: #721c24; }
-
-        .property-notes {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .property-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .property-link {
-            flex: 1;
-            text-decoration: none;
-            background: #f8f9fa;
-            color: #333;
-            padding: 10px 15px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-        }
-
-        .property-link:hover {
-            background: #e9ecef;
-            color: #667eea;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .stat-card {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            color: white;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            opacity: 0.9;
-            font-size: 1rem;
-        }
-
-        .no-properties {
-            text-align: center;
-            color: white;
-            padding: 60px 20px;
-        }
-
-        .no-properties h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            opacity: 0.9;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 90%;
-        }
-
-        .close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .loading {
-            text-align: center;
-            color: white;
-            padding: 20px;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="header">
-        <h1>🏠 Property Saver</h1>
-        <p>Keep track of all your property searches in one place</p>
-    </div>
-
-    <div style="text-align: center; margin-bottom: 30px;">
-        <a href="index.php" style="display: inline-block; background: rgba(255,255,255,0.3); color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; margin: 0 10px; backdrop-filter: blur(10px);">🏠 Property Saver</a>
-        <a href="calculator.php" style="display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; margin: 0 10px; backdrop-filter: blur(10px);">💰 Calculator</a>
-    </div>
-
-    <div id="alert" class="alert"></div>
-
-    <div class="add-property">
-        <h2 style="margin-bottom: 25px; color: #333;">Add New Property</h2>
-        <form id="propertyForm">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="propertyUrl">Property URL *</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="url" id="propertyUrl" name="url" required placeholder="https://www.daft.ie/ or myhome.ie/ or any property site..." style="flex: 1;">
-                        <button type="button" class="btn" onclick="autoFillFromDaft()" style="padding: 8px 16px; font-size: 0.9rem;">🔍 Auto-Fill</button>
-                    </div>
-                    <small style="color: #666; font-size: 0.9rem;">Supports: Daft.ie, MyHome.ie, Property Partners, Sherry FitzGerald, Remax & more</small>
-                </div>
-                <div class="form-group">
-                    <label for="propertyPrice">Price</label>
-                    <input type="text" id="propertyPrice" name="price" placeholder="€495,000">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="propertyTitle">Property Title</label>
-                    <input type="text" id="propertyTitle" name="title" placeholder="3 bed house in Dublin">
-                </div>
-                <div class="form-group">
-                    <label for="propertyStatus">Status</label>
-                    <select id="propertyStatus" name="status">
-                        <option value="interested">Interested</option>
-                        <option value="viewing">Viewing Scheduled</option>
-                        <option value="offer">Offer Made</option>
-                        <option value="rejected">Rejected/Passed</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="propertyNotes">Notes</label>
-                <textarea id="propertyNotes" name="notes" placeholder="Add any notes about this property..."></textarea>
-            </div>
-
-            <button type="submit" class="btn">
-                <span>📋</span> Save Property
-            </button>
-        </form>
-    </div>
-
-    <div class="stats" id="stats">
-        <div class="stat-card">
-            <div class="stat-number" id="totalProperties">0</div>
-            <div class="stat-label">Total Properties</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number" id="interestedCount">0</div>
-            <div class="stat-label">Interested</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number" id="viewingCount">0</div>
-            <div class="stat-label">Viewing</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number" id="offerCount">0</div>
-            <div class="stat-label">Offers Made</div>
-        </div>
-    </div>
-
-    <div id="loadingMessage" class="loading">Loading properties...</div>
-
-    <div class="properties-grid" id="propertiesGrid" style="display: none;">
-    </div>
-</div>
-
-<!-- Edit Modal -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Edit Property</h2>
-        <form id="editForm">
-            <input type="hidden" id="editId">
-            <div class="form-group">
-                <label for="editUrl">Property URL</label>
-                <input type="url" id="editUrl" name="url" required>
-            </div>
-            <div class="form-group">
-                <label for="editTitle">Title</label>
-                <input type="text" id="editTitle" name="title">
-            </div>
-            <div class="form-group">
-                <label for="editPrice">Price</label>
-                <input type="text" id="editPrice" name="price">
-            </div>
-            <div class="form-group">
-                <label for="editStatus">Status</label>
-                <select id="editStatus" name="status">
-                    <option value="interested">Interested</option>
-                    <option value="viewing">Viewing Scheduled</option>
-                    <option value="offer">Offer Made</option>
-                    <option value="rejected">Rejected/Passed</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="editNotes">Notes</label>
-                <textarea id="editNotes" name="notes"></textarea>
-            </div>
-            <button type="submit" class="btn">Update Property</button>
-        </form>
-    </div>
-</div>
-
-<script>
-    let properties = [];
-
-    function showAlert(message, type = 'success') {
-        const alert = document.getElementById('alert');
-        alert.className = `alert alert-${type}`;
-        alert.textContent = message;
-        alert.style.display = 'block';
-        setTimeout(() => {
-            alert.style.display = 'none';
-        }, 3000);
+    switch (true) {
+        case strpos($domain, 'daft.ie') !== false:
+            return scrapeDaft($url);
+        case strpos($domain, 'myhome.ie') !== false:
+            return scrapeMyHome($url);
+        case strpos($domain, 'propertypartners.ie') !== false:
+            return scrapePropertyPartners($url);
+        case strpos($domain, 'sherry.ie') !== false:
+            return scrapeSherry($url);
+        case strpos($domain, 'remax.ie') !== false:
+            return scrapeRemax($url);
+        default:
+            return scrapeGeneric($url);
     }
+}
 
-    async function apiCall(endpoint, method = 'GET', data = null) {
-        try {
-            const options = {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            };
-
-            if (data) {
-                options.body = JSON.stringify(data);
-            }
-
-            const response = await fetch(`./backend.php?endpoint=${endpoint}`, options);
-            const result = await response.json();
-
-            if (!result.success) {
-                throw new Error(result.error || 'Unknown error');
-            }
-
-            return result;
-        } catch (error) {
-            console.error('API Error:', error);
-            showAlert('Error: ' + error.message, 'error');
-            throw error;
-        }
-    }
-
-    async function loadProperties() {
-        try {
-            const result = await apiCall('properties');
-            properties = result.data || [];
-            renderProperties();
-            updateStats();
-            document.getElementById('loadingMessage').style.display = 'none';
-            document.getElementById('propertiesGrid').style.display = 'grid';
-        } catch (error) {
-            document.getElementById('loadingMessage').textContent = 'Error loading properties. Check if database is set up.';
-        }
-    }
-
-    async function addProperty(propertyData) {
-        try {
-            await apiCall('properties', 'POST', propertyData);
-            await loadProperties();
-            showAlert('Property saved successfully!');
-        } catch (error) {
-            // Handle error
-        }
-    }
-
-    async function editProperty(id, propertyData) {
-        try {
-            await apiCall('properties', 'PUT', { ...propertyData, id: id });
-            await loadProperties();
-            showAlert('Property updated successfully!');
-        } catch (error) {
-            // Handle error
-        }
-    }
-
-    async function deleteProperty(id) {
-        if (confirm('Are you sure you want to delete this property?')) {
-            try {
-                await apiCall('properties', 'DELETE', { id: id });
-                await loadProperties();
-                showAlert('Property deleted successfully!');
-            } catch (error) {
-                // Handle error
-            }
-        }
-    }
-
-    function updateStats() {
-        const stats = {
-            total: properties.length,
-            interested: properties.filter(p => p.status === 'interested').length,
-            viewing: properties.filter(p => p.status === 'viewing').length,
-            offer: properties.filter(p => p.status === 'offer').length
-        };
-
-        document.getElementById('totalProperties').textContent = stats.total;
-        document.getElementById('interestedCount').textContent = stats.interested;
-        document.getElementById('viewingCount').textContent = stats.viewing;
-        document.getElementById('offerCount').textContent = stats.offer;
-    }
-
-    function renderProperties() {
-        const grid = document.getElementById('propertiesGrid');
-
-        if (properties.length === 0) {
-            grid.innerHTML = `
-                    <div class="no-properties">
-                        <h3>No properties saved yet</h3>
-                        <p>Add your first property using the form above!</p>
-                    </div>
-                `;
-            return;
-        }
-
-        grid.innerHTML = properties.map(property => {
-            const imageUrl = extractImageFromNotes(property.notes);
-            return `
-                <div class="property-card">
-                    ${imageUrl ? `
-                        <div class="property-image">
-                            <img src="${imageUrl}" alt="Property image" style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 15px;"
-                                 onerror="this.style.display='none'">
-                        </div>
-                    ` : ''}
-
-                    <div class="property-header">
-                        <div>
-                            <div class="property-title">${property.title || 'Property'}</div>
-                            <div class="property-date">${new Date(property.date_added).toLocaleDateString()}</div>
-                        </div>
-                        ${property.price ? `<div class="property-price">${property.price}</div>` : ''}
-                    </div>
-
-                    <div class="property-status status-${property.status}">
-                        ${property.status.charAt(0).toUpperCase() + property.status.slice(1)}
-                    </div>
-
-                    ${property.notes ? `<div class="property-notes">${cleanNotesForDisplay(property.notes)}</div>` : ''}
-
-                    <div class="property-actions">
-                        <a href="${property.url}" target="_blank" class="property-link">
-                            <span>🔗</span> View Property
-                        </a>
-                        <button class="btn btn-secondary" onclick="openEditModal(${property.id})" style="padding: 8px 15px; font-size: 0.9rem;">
-                            ✏️ Edit
-                        </button>
-                        <button class="btn btn-danger" onclick="deleteProperty(${property.id})" style="padding: 8px 15px; font-size: 0.9rem;">
-                            🗑️ Delete
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function openEditModal(id) {
-        const property = properties.find(p => p.id == id);
-        if (!property) return;
-
-        document.getElementById('editId').value = property.id;
-        document.getElementById('editUrl').value = property.url;
-        document.getElementById('editTitle').value = property.title || '';
-        document.getElementById('editPrice').value = property.price || '';
-        document.getElementById('editStatus').value = property.status;
-        document.getElementById('editNotes').value = property.notes || '';
-
-        document.getElementById('editModal').style.display = 'block';
-    }
-
-    function extractImageFromNotes(notes) {
-        if (!notes) return null;
-
-        // Look for image URL in notes
-        const imageMatch = notes.match(/Image:\s*(https?:\/\/[^\s|]+)/);
-        return imageMatch ? imageMatch[1] : null;
-    }
-
-    function cleanNotesForDisplay(notes) {
-        if (!notes) return '';
-
-        // Remove the image URL from notes for display
-        return notes.replace(/\s*\|\s*Image:\s*https?:\/\/[^\s|]+/g, '').trim();
-    }
-
-    // Auto-fill from any property site
-    async function autoFillFromDaft() {
-        const url = document.getElementById('propertyUrl').value;
-
-        if (!url) {
-            showAlert('Please enter a property URL first', 'error');
-            return;
-        }
-
-        // Check if it's a supported property site
-        const supportedSites = ['daft.ie', 'myhome.ie', 'propertypartners.ie', 'sherry.ie', 'remax.ie'];
-        const isSupported = supportedSites.some(site => url.includes(site));
-
-        if (!isSupported) {
-            showAlert('This site may not be fully supported, but we\'ll try to extract basic information', 'warning');
-        }
-
-        // Show loading state
-        const button = event.target;
-        const originalText = button.innerHTML;
-        button.innerHTML = '⏳ Loading...';
-        button.disabled = true;
-
-        try {
-            console.log('Attempting to fetch:', './property_scraper.php');
-            console.log('With URL:', url);
-
-            const response = await fetch('./property_scraper.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ url: url })
-            });
-
-            console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const result = await response.json();
-            console.log('Scraper result:', result);
-
-            if (result.success) {
-                // Fill form with scraped data
-                if (result.data.title) {
-                    document.getElementById('propertyTitle').value = result.data.title;
-                }
-                if (result.data.price) {
-                    document.getElementById('propertyPrice').value = result.data.price;
-                }
-
-                // Build notes from scraped data (including image)
-                let notes = [];
-                if (result.data.property_type) notes.push(`Type: ${result.data.property_type}`);
-                if (result.data.bedrooms) notes.push(result.data.bedrooms);
-                if (result.data.bathrooms) notes.push(result.data.bathrooms);
-                if (result.data.address) notes.push(`Address: ${result.data.address}`);
-                if (result.data.ber_rating) notes.push(`BER: ${result.data.ber_rating}`);
-                if (result.data.image_url) notes.push(`Image: ${result.data.image_url}`);
-
-                if (notes.length > 0) {
-                    document.getElementById('propertyNotes').value = notes.join(' | ');
-                }
-
-                showAlert(`Property information auto-filled from ${result.source}!`);
-            } else {
-                showAlert('Could not extract property info: ' + result.error, 'error');
-            }
-
-        } catch (error) {
-            console.error('Scraping error:', error);
-            showAlert('Error connecting to scraper service', 'error');
-        }
-
-        // Restore button
-        button.innerHTML = originalText;
-        button.disabled = false;
-    }
+function scrapeDaft($url) {
     try {
-        const response = await fetch('property_scraper.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ url: url })
-        });
+        $html = fetchHTML($url);
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($html);
+        libxml_clear_errors();
+        $xpath = new DOMXPath($dom);
 
-        const result = await response.json();
+        $data = [
+            'title' => extractDaftTitle($xpath, $html),
+            'price' => extractDaftPrice($xpath, $html),
+            'bedrooms' => extractBedrooms($xpath, $html),
+            'bathrooms' => extractBathrooms($xpath, $html),
+            'property_type' => extractPropertyType($xpath, $html),
+            'address' => extractDaftAddress($xpath, $html),
+            'image_url' => extractDaftImage($xpath, $html),
+            'ber_rating' => extractBER($xpath, $html),
+        ];
 
-        if (result.success) {
-            // Fill form with scraped data
-            if (result.data.title) {
-                document.getElementById('propertyTitle').value = result.data.title;
-            }
-            if (result.data.price) {
-                document.getElementById('propertyPrice').value = result.data.price;
-            }
+        return [
+            'success' => true,
+            'data' => array_filter($data),
+            'source' => 'Daft.ie'
+        ];
 
-            // Build notes from scraped data
-            let notes = [];
-            if (result.data.property_type) notes.push(`Type: ${result.data.property_type}`);
-            if (result.data.bedrooms) notes.push(result.data.bedrooms);
-            if (result.data.bathrooms) notes.push(result.data.bathrooms);
-            if (result.data.address) notes.push(`Address: ${result.data.address}`);
-            if (result.data.ber_rating) notes.push(`BER: ${result.data.ber_rating}`);
-            if (result.data.image_url) notes.push(`Image: ${result.data.image_url}`);
+    } catch (Exception $e) {
+        return ['success' => false, 'error' => $e->getMessage(), 'source' => 'Daft.ie'];
+    }
+}
 
-            if (notes.length > 0) {
-                document.getElementById('propertyNotes').value = notes.join(' | ');
-            }
+function scrapeMyHome($url) {
+    try {
+        $html = fetchHTML($url);
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($html);
+        libxml_clear_errors();
+        $xpath = new DOMXPath($dom);
 
-            showAlert('Property information auto-filled successfully!');
-        } else {
-            showAlert('Could not extract property info: ' + result.error, 'error');
+        $data = [
+            'title' => extractMyHomeTitle($xpath, $html),
+            'price' => extractMyHomePrice($xpath, $html),
+            'bedrooms' => extractBedrooms($xpath, $html),
+            'bathrooms' => extractBathrooms($xpath, $html),
+            'property_type' => extractPropertyType($xpath, $html),
+            'address' => extractMyHomeAddress($xpath, $html),
+            'image_url' => extractMyHomeImage($xpath, $html),
+            'ber_rating' => extractBER($xpath, $html),
+        ];
+
+        return [
+            'success' => true,
+            'data' => array_filter($data),
+            'source' => 'MyHome.ie'
+        ];
+
+    } catch (Exception $e) {
+        return ['success' => false, 'error' => $e->getMessage(), 'source' => 'MyHome.ie'];
+    }
+}
+
+function scrapePropertyPartners($url) {
+    try {
+        $html = fetchHTML($url);
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($html);
+        libxml_clear_errors();
+        $xpath = new DOMXPath($dom);
+
+        $data = [
+            'title' => extractText($xpath, '//h1') ?: extractText($xpath, '//title'),
+            'price' => extractGenericPrice($xpath, $html),
+            'bedrooms' => extractBedrooms($xpath, $html),
+            'bathrooms' => extractBathrooms($xpath, $html),
+            'property_type' => extractPropertyType($xpath, $html),
+            'image_url' => extractGenericImage($xpath, $html, $url),
+            'ber_rating' => extractBER($xpath, $html),
+        ];
+
+        return [
+            'success' => true,
+            'data' => array_filter($data),
+            'source' => 'Property Partners'
+        ];
+
+    } catch (Exception $e) {
+        return ['success' => false, 'error' => $e->getMessage(), 'source' => 'Property Partners'];
+    }
+}
+
+function scrapeSherry($url) {
+    try {
+        $html = fetchHTML($url);
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($html);
+        libxml_clear_errors();
+        $xpath = new DOMXPath($dom);
+
+        $data = [
+            'title' => extractText($xpath, '//h1') ?: extractText($xpath, '//title'),
+            'price' => extractGenericPrice($xpath, $html),
+            'bedrooms' => extractBedrooms($xpath, $html),
+            'bathrooms' => extractBathrooms($xpath, $html),
+            'property_type' => extractPropertyType($xpath, $html),
+            'image_url' => extractGenericImage($xpath, $html, $url),
+            'ber_rating' => extractBER($xpath, $html),
+        ];
+
+        return [
+            'success' => true,
+            'data' => array_filter($data),
+            'source' => 'Sherry FitzGerald'
+        ];
+
+    } catch (Exception $e) {
+        return ['success' => false, 'error' => $e->getMessage(), 'source' => 'Sherry FitzGerald'];
+    }
+}
+
+function scrapeRemax($url) {
+    try {
+        $html = fetchHTML($url);
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($html);
+        libxml_clear_errors();
+        $xpath = new DOMXPath($dom);
+
+        $data = [
+            'title' => extractText($xpath, '//h1') ?: extractText($xpath, '//title'),
+            'price' => extractGenericPrice($xpath, $html),
+            'bedrooms' => extractBedrooms($xpath, $html),
+            'bathrooms' => extractBathrooms($xpath, $html),
+            'property_type' => extractPropertyType($xpath, $html),
+            'image_url' => extractGenericImage($xpath, $html, $url),
+            'ber_rating' => extractBER($xpath, $html),
+        ];
+
+        return [
+            'success' => true,
+            'data' => array_filter($data),
+            'source' => 'Remax'
+        ];
+
+    } catch (Exception $e) {
+        return ['success' => false, 'error' => $e->getMessage(), 'source' => 'Remax'];
+    }
+}
+
+function scrapeGeneric($url) {
+    try {
+        $html = fetchHTML($url);
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($html);
+        libxml_clear_errors();
+        $xpath = new DOMXPath($dom);
+
+        $data = [
+            'title' => extractGenericTitle($xpath, $html),
+            'price' => extractGenericPrice($xpath, $html),
+            'bedrooms' => extractBedrooms($xpath, $html),
+            'bathrooms' => extractBathrooms($xpath, $html),
+            'property_type' => extractPropertyType($xpath, $html),
+            'image_url' => extractGenericImage($xpath, $html, $url),
+            'ber_rating' => extractBER($xpath, $html),
+        ];
+
+        return [
+            'success' => true,
+            'data' => array_filter($data),
+            'source' => 'Generic'
+        ];
+
+    } catch (Exception $e) {
+        return ['success' => false, 'error' => $e->getMessage(), 'source' => 'Generic'];
+    }
+}
+
+// Site-specific extractors
+function extractDaftTitle($xpath, $html) {
+    $selectors = [
+        '//h1[@data-testid="address"]',
+        '//h1[contains(@class, "address")]',
+        '//div[@data-testid="address"]',
+        '//h1'
+    ];
+    return findFirstMatch($xpath, $selectors) ?: extractFromTitle($html);
+}
+
+function extractDaftPrice($xpath, $html) {
+    $selectors = [
+        '//span[@data-testid="price"]',
+        '//div[@data-testid="price"]',
+        '//*[contains(@class, "price")]'
+    ];
+    return cleanPrice(findFirstMatch($xpath, $selectors));
+}
+
+function extractDaftAddress($xpath, $html) {
+    $selectors = [
+        '//div[@data-testid="address-line"]',
+        '//*[contains(@class, "address")]'
+    ];
+    return findFirstMatch($xpath, $selectors);
+}
+
+function extractDaftImage($xpath, $html) {
+    $selectors = [
+        '//img[contains(@class, "property-image")]/@src',
+        '//img[contains(@alt, "property")]/@src',
+        '//div[contains(@class, "image")]//img/@src',
+        '//picture//img/@src'
+    ];
+
+    foreach ($selectors as $selector) {
+        $nodes = $xpath->query($selector);
+        if ($nodes->length > 0) {
+            $src = $nodes->item(0)->nodeValue;
+            return makeAbsoluteUrl($src, 'https://www.daft.ie');
         }
+    }
+    return null;
+}
 
-    } catch (error) {
-        console.error('Scraping error:', error);
-        showAlert('Error connecting to scraper service', 'error');
+function extractMyHomeTitle($xpath, $html) {
+    $selectors = [
+        '//h1[@class="property-title"]',
+        '//h1[contains(@class, "title")]',
+        '//h1'
+    ];
+    return findFirstMatch($xpath, $selectors) ?: extractFromTitle($html);
+}
+
+function extractMyHomePrice($xpath, $html) {
+    $selectors = [
+        '//div[@class="price"]',
+        '//*[contains(@class, "price")]',
+        '//span[contains(@class, "price")]'
+    ];
+    return cleanPrice(findFirstMatch($xpath, $selectors));
+}
+
+function extractMyHomeAddress($xpath, $html) {
+    $selectors = [
+        '//div[contains(@class, "address")]',
+        '//p[contains(@class, "address")]'
+    ];
+    return findFirstMatch($xpath, $selectors);
+}
+
+function extractMyHomeImage($xpath, $html) {
+    $selectors = [
+        '//img[contains(@class, "property")]/@src',
+        '//img[contains(@class, "main")]/@src',
+        '//div[contains(@class, "image")]//img/@src'
+    ];
+
+    foreach ($selectors as $selector) {
+        $nodes = $xpath->query($selector);
+        if ($nodes->length > 0) {
+            $src = $nodes->item(0)->nodeValue;
+            return makeAbsoluteUrl($src, 'https://www.myhome.ie');
+        }
+    }
+    return null;
+}
+
+// Generic extractors
+function extractGenericTitle($xpath, $html) {
+    $selectors = [
+        '//h1[contains(@class, "property")]',
+        '//h1[contains(@class, "title")]',
+        '//h1[contains(@class, "address")]',
+        '//h1'
+    ];
+    return findFirstMatch($xpath, $selectors) ?: extractFromTitle($html);
+}
+
+function extractGenericPrice($xpath, $html) {
+    $selectors = [
+        '//*[contains(@class, "price")]',
+        '//*[contains(text(), "€")]',
+        '//*[contains(text(), "POA")]'
+    ];
+
+    foreach ($selectors as $selector) {
+        $result = extractText($xpath, $selector);
+        if ($result && (strpos($result, '€') !== false || stripos($result, 'POA') !== false)) {
+            return cleanPrice($result);
+        }
     }
 
-    // Restore button
-    button.innerHTML = originalText;
-    button.disabled = false;
+    // Regex fallback
+    if (preg_match('/€[\d,]+/i', $html, $matches)) {
+        return cleanPrice($matches[0]);
     }
 
-    // Event listeners
-    document.getElementById('propertyForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const propertyData = Object.fromEntries(formData);
+    return null;
+}
 
-        await addProperty(propertyData);
-        this.reset();
-    });
+function extractGenericImage($xpath, $html, $url) {
+    $selectors = [
+        '//img[contains(@class, "property")]/@src',
+        '//img[contains(@class, "main")]/@src',
+        '//img[contains(@alt, "property")]/@src',
+        '//div[contains(@class, "image")]//img/@src',
+        '//picture//img/@src',
+        '//img[1]/@src'
+    ];
 
-    document.getElementById('editForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const propertyData = Object.fromEntries(formData);
-        const id = document.getElementById('editId').value;
-
-        await editProperty(id, propertyData);
-        document.getElementById('editModal').style.display = 'none';
-    });
-
-    document.querySelector('.close').addEventListener('click', function() {
-        document.getElementById('editModal').style.display = 'none';
-    });
-
-    window.addEventListener('click', function(e) {
-        const modal = document.getElementById('editModal');
-        if (e.target === modal) {
-            modal.style.display = 'none';
+    foreach ($selectors as $selector) {
+        $nodes = $xpath->query($selector);
+        if ($nodes->length > 0) {
+            $src = $nodes->item(0)->nodeValue;
+            if ($src && !strpos($src, 'logo') && !strpos($src, 'icon')) {
+                return makeAbsoluteUrl($src, $url);
+            }
         }
-    });
+    }
+    return null;
+}
 
-    // Initialize
-    loadProperties();
-</script>
-</body>
-</html>
+function extractBedrooms($xpath, $html) {
+    $selectors = [
+        '//div[contains(@class, "bed")]//span',
+        '//*[@data-testid="bed" or @data-testid="beds"]',
+        '//*[contains(@class, "bed")]',
+        '//*[contains(text(), "bed")]'
+    ];
+
+    foreach ($selectors as $selector) {
+        $result = extractText($xpath, $selector);
+        if ($result && preg_match('/(\d+)/', $result, $matches)) {
+            return $matches[1] . ' bed';
+        }
+    }
+
+    if (preg_match('/(\d+)\s*bed/i', $html, $matches)) {
+        return $matches[1] . ' bed';
+    }
+
+    return null;
+}
+
+function extractBathrooms($xpath, $html) {
+    $selectors = [
+        '//div[contains(@class, "bath")]//span',
+        '//*[@data-testid="bath" or @data-testid="baths"]',
+        '//*[contains(@class, "bath")]',
+        '//*[contains(text(), "bath")]'
+    ];
+
+    foreach ($selectors as $selector) {
+        $result = extractText($xpath, $selector);
+        if ($result && preg_match('/(\d+)/', $result, $matches)) {
+            return $matches[1] . ' bath';
+        }
+    }
+
+    if (preg_match('/(\d+)\s*bath/i', $html, $matches)) {
+        return $matches[1] . ' bath';
+    }
+
+    return null;
+}
+
+function extractPropertyType($xpath, $html) {
+    $selectors = [
+        '//div[@data-testid="property-type"]',
+        '//*[contains(@class, "property-type")]',
+        '//*[contains(@class, "type")]'
+    ];
+
+    foreach ($selectors as $selector) {
+        $result = extractText($xpath, $selector);
+        if ($result) {
+            return cleanText($result);
+        }
+    }
+
+    $types = ['House', 'Apartment', 'Duplex', 'Townhouse', 'Cottage', 'Bungalow', 'Studio'];
+    foreach ($types as $type) {
+        if (stripos($html, $type) !== false) {
+            return $type;
+        }
+    }
+
+    return null;
+}
+
+function extractBER($xpath, $html) {
+    $selectors = [
+        '//*[contains(@class, "ber")]',
+        '//*[contains(text(), "BER")]',
+        '//*[@data-testid="ber"]'
+    ];
+
+    foreach ($selectors as $selector) {
+        $result = extractText($xpath, $selector);
+        if ($result && preg_match('/[A-G][0-9]*/', $result, $matches)) {
+            return $matches[0];
+        }
+    }
+
+    if (preg_match('/BER\s*:?\s*([A-G][0-9]*)/i', $html, $matches)) {
+        return $matches[1];
+    }
+
+    return null;
+}
+
+// Helper functions
+function fetchHTML($url) {
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        CURLOPT_HTTPHEADER => [
+            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language: en-US,en;q=0.5',
+            'Accept-Encoding: gzip, deflate',
+            'Connection: keep-alive',
+            'Cache-Control: no-cache',
+        ],
+        CURLOPT_ENCODING => 'gzip',
+        CURLOPT_SSL_VERIFYPEER => false,
+    ]);
+
+    $html = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        throw new Exception("Failed to load page (HTTP $httpCode)");
+    }
+
+    if (empty($html)) {
+        throw new Exception('No content received');
+    }
+
+    return $html;
+}
+
+function extractText($xpath, $query) {
+    try {
+        $nodes = $xpath->query($query);
+        if ($nodes && $nodes->length > 0) {
+            $text = trim($nodes->item(0)->textContent);
+            return !empty($text) ? $text : null;
+        }
+    } catch (Exception $e) {
+        // Ignore XPath errors
+    }
+    return null;
+}
+
+function findFirstMatch($xpath, $selectors) {
+    foreach ($selectors as $selector) {
+        $result = extractText($xpath, $selector);
+        if ($result && strlen($result) > 2) {
+            return cleanText($result);
+        }
+    }
+    return null;
+}
+
+function extractFromTitle($html) {
+    if (preg_match('/<title[^>]*>([^<]+)<\/title>/i', $html, $matches)) {
+        $title = strip_tags($matches[1]);
+        $excludeWords = ['Daft.ie', 'MyHome.ie', 'Property', 'For Sale'];
+        foreach ($excludeWords as $word) {
+            if (stripos($title, $word) === false || strlen($title) > 20) {
+                return cleanText($title);
+            }
+        }
+    }
+    return null;
+}
+
+function makeAbsoluteUrl($src, $baseUrl) {
+    if (!$src) return null;
+
+    if (filter_var($src, FILTER_VALIDATE_URL)) {
+        return $src;
+    } elseif (strpos($src, '/') === 0) {
+        $parsedBase = parse_url($baseUrl);
+        return $parsedBase['scheme'] . '://' . $parsedBase['host'] . $src;
+    }
+    return null;
+}
+
+function cleanText($text) {
+    if (!$text) return null;
+
+    $text = trim($text);
+    $text = preg_replace('/\s+/', ' ', $text);
+    $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+
+    return $text;
+}
+
+function cleanPrice($priceText) {
+    if (!$priceText) return null;
+
+    $priceText = trim($priceText);
+
+    if (stripos($priceText, 'POA') !== false || stripos($priceText, 'Price on Application') !== false) {
+        return 'POA';
+    }
+
+    if (preg_match('/€([\d,]+)/', $priceText, $matches)) {
+        $number = str_replace(',', '', $matches[1]);
+        if (is_numeric($number)) {
+            return '€' . number_format($number);
+        }
+    }
+
+    return $priceText;
+}
+
+// API endpoint
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $url = $input['url'] ?? '';
+
+    if (empty($url)) {
+        echo json_encode(['success' => false, 'error' => 'No URL provided']);
+        exit;
+    }
+
+    if (!filter_var($url, FILTER_VALIDATE_URL)) {
+        echo json_encode(['success' => false, 'error' => 'Invalid URL format']);
+        exit;
+    }
+
+    $result = scrapeProperty($url);
+    echo json_encode($result);
+    exit;
+}
+
+// Test interface
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['test'])) {
+    echo '<h2>Property Scraper Test</h2>';
+    echo '<p>Supports: Daft.ie, MyHome.ie, Property Partners, Sherry FitzGerald, Remax, and more</p>';
+    echo '<form method="post" style="margin: 20px;">';
+    echo '<input type="text" name="test_url" placeholder="Enter property URL" style="width: 500px; padding: 10px;" />';
+    echo '<button type="submit">Test Scraper</button>';
+    echo '</form>';
+
+    if (isset($_POST['test_url'])) {
+        $result = scrapeProperty($_POST['test_url']);
+        echo '<pre>' . json_encode($result, JSON_PRETTY_PRINT) . '</pre>';
+    }
+}
+?>

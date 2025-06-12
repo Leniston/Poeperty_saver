@@ -637,53 +637,6 @@
         button.innerHTML = '⏳ Loading...';
         button.disabled = true;
 
-        try {
-            const response = await fetch('daft_scraper.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ url: url })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Fill form with scraped data
-                if (result.data.title) {
-                    document.getElementById('propertyTitle').value = result.data.title;
-                }
-                if (result.data.price) {
-                    document.getElementById('propertyPrice').value = result.data.price;
-                }
-
-                // Build notes from scraped data
-                let notes = [];
-                if (result.data.property_type) notes.push(`Type: ${result.data.property_type}`);
-                if (result.data.bedrooms) notes.push(result.data.bedrooms);
-                if (result.data.bathrooms) notes.push(result.data.bathrooms);
-                if (result.data.address) notes.push(`Address: ${result.data.address}`);
-                if (result.data.ber_rating) notes.push(`BER: ${result.data.ber_rating}`);
-                if (result.data.image_url) notes.push(`Image: ${result.data.image_url}`);
-
-                if (notes.length > 0) {
-                    document.getElementById('propertyNotes').value = notes.join(' | ');
-                }
-
-                showAlert('Property information auto-filled successfully!');
-            } else {
-                showAlert('Could not extract property info: ' + result.error, 'error');
-            }
-
-        } catch (error) {
-            console.error('Scraping error:', error);
-            showAlert('Error connecting to scraper service', 'error');
-        }
-
-        // Restore button
-        button.innerHTML = originalText;
-        button.disabled = false;
-    }
 
     // Event listeners
     document.getElementById('propertyForm').addEventListener('submit', async function(e) {

@@ -1,4 +1,21 @@
 <?php
+// Turn off error display and force JSON responses
+ini_set('display_errors', 0);
+error_reporting(0);
+
+// Force JSON content type early
+header('Content-Type: application/json');
+
+// Catch any fatal errors and return JSON
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error && $error['type'] === E_ERROR) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Server error: ' . $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line']
+        ]);
+    }
+});
 // location_analyzer_backend.php - Complete backend with your exact coordinates
 
 header('Content-Type: application/json');

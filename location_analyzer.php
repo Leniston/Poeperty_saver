@@ -304,33 +304,77 @@
             try {
                 // Step 1: Scrape property information
                 showAlert('Extracting property information...', 'info');
-                const propertyResponse = await fetch('property_scraper.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: propertyUrl })
-                });
 
-                const propertyResult = await propertyResponse.json();
+                let propertyResult;
+                try {
+                    const propertyResponse = await fetch('property_scraper.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: propertyUrl })
+                    });
 
-                if (!propertyResult.success) {
-                    throw new Error('Could not extract property information: ' + propertyResult.error);
+                    if (!propertyResponse.ok) {
+                        throw new Error(`Property scraper HTTP ${propertyResponse.status}`);
+                    }
+
+                    const propertyText = await propertyResponse.text();
+                    console.log('Property scraper response:', propertyText);
+
+                    try {
+                        propertyResult = JSON.parse(propertyText);
+                    } catch (e) {
+                        throw new Error('Property scraper returned invalid JSON: ' + propertyText.substring(0, 200));
+                    }
+
+                    if (!propertyResult.success) {
+                        throw new Error('Could not extract property information: ' + propertyResult.error);
+                    }
+                } catch (error) {
+                    console.error('Property scraper error:', error);
+                    // Continue with manual property data
+                    propertyResult = {
+                        success: true,
+                        data: {
+                            title: 'Property from ' + propertyUrl,
+                            address: propertyUrl.replace(/https?:\/\/[^\/]+\//, '').replace(/[\/\-]/g, ' ')
+                        }
+                    };
+                    showAlert('Using URL as property address (scraper issue)', 'info');
                 }
 
                 // Step 2: Calculate distances
                 showAlert('Calculating travel times for all transport modes...', 'info');
-                const distanceResponse = await fetch('location_analyzer_backend.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        property_address: propertyResult.data.address || propertyResult.data.title,
-                        locations: defaultLocations
-                    })
-                });
 
-                const distanceResult = await distanceResponse.json();
+                let distanceResult;
+                try {
+                    const distanceResponse = await fetch('location_analyzer_backend.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            property_address: propertyResult.data.address || propertyResult.data.title,
+                            locations: defaultLocations
+                        })
+                    });
 
-                if (!distanceResult.success) {
-                    throw new Error('Could not calculate distances: ' + distanceResult.error);
+                    if (!distanceResponse.ok) {
+                        throw new Error(`Distance calculator HTTP ${distanceResponse.status}`);
+                    }
+
+                    const distanceText = await distanceResponse.text();
+                    console.log('Distance calculator response:', distanceText);
+
+                    try {
+                        distanceResult = JSON.parse(distanceText);
+                    } catch (e) {
+                        throw new Error('Distance calculator returned invalid JSON: ' + distanceText.substring(0, 200));
+                    }
+
+                    if (!distanceResult.success) {
+                        throw new Error('Could not calculate distances: ' + distanceResult.error);
+                    }
+                } catch (error) {
+                    console.error('Distance calculation error:', error);
+                    throw new Error('Distance calculation failed: ' + error.message);
                 }
 
                 // Display results
@@ -339,7 +383,11 @@
 
             } catch (error) {
                 console.error('Analysis error:', error);
-                resultsContainer.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                resultsContainer.innerHTML = `<div class="error">
+                <strong>Analysis Failed:</strong><br>
+                ${error.message}<br><br>
+                <small>Check the browser console (F12) for more details.</small>
+            </div>`;
                 showAlert('Analysis failed: ' + error.message, 'error');
             }
         }

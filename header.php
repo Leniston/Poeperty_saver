@@ -200,6 +200,9 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <a href="index.php" class="nav-link <?php echo $current_page === 'index' ? 'active' : ''; ?>">
             🏠 Property Saver
         </a>
+        <a href="location_analyzer.php" class="nav-link">
+            🗺️ Location Analyzer
+        </a>
         <a href="calculator.php" class="nav-link <?php echo $current_page === 'calculator' ? 'active' : ''; ?>">
             💰 Property Calculator
         </a>

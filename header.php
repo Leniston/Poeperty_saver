@@ -20,6 +20,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
             case 'calculator': echo 'Property Calculator'; break;
             case 'mortgage': echo 'Mortgage Calculator'; break;
             case 'location_analyzer': echo 'Location Analyzer'; break;
+            case 'area_checker': echo 'Area Checker'; break;
             default: echo 'Property Tools';
         }
         ?></title>
@@ -228,6 +229,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                 case 'calculator': echo '💰 Property Calculator'; break;
                 case 'mortgage': echo '📊 Mortgage Calculator'; break;
                 case 'location_analyzer': echo '🗺️ Location Analyzer'; break;
+                case 'area_checker': echo '🏘️ Area Checker'; break;
                 default: echo '🏠 Property Tools';
             }
             ?>
@@ -239,6 +241,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                 case 'calculator': echo 'Calculate total costs and remaining funds for different scenarios'; break;
                 case 'mortgage': echo 'Calculate monthly payments and total costs for different mortgage scenarios'; break;
                 case 'location_analyzer': echo 'Automatically analyze travel times to your key locations'; break;
+                case 'area_checker': echo 'Get comprehensive information about local amenities and services'; break;
                 default: echo 'Your complete property search toolkit';
             }
             ?>
@@ -251,6 +254,9 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         </a>
         <a href="location_analyzer.php" class="nav-link <?php echo $current_page === 'location_analyzer' ? 'active' : ''; ?>">
             🗺️ Location Analyzer
+        </a>
+        <a href="area_checker.php" class="nav-link <?php echo $current_page === 'area_checker' ? 'active' : ''; ?>">
+            🏘️ Area Checker
         </a>
         <a href="calculator.php" class="nav-link <?php echo $current_page === 'calculator' ? 'active' : ''; ?>">
             💰 Property Calculator

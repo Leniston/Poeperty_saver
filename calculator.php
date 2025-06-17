@@ -48,33 +48,97 @@
 
         .funds-section {
             background: #e8f4fd;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
             margin-bottom: 25px;
         }
 
         .funds-section h3 {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             color: #333;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            text-align: center;
         }
 
-        .funds-input {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+        .funds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
         }
 
-        .funds-input input {
+        .fund-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .fund-item:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .fund-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .fund-input {
+            width: 100%;
             padding: 12px 15px;
-            border: 2px solid #667eea;
+            border: 2px solid #e1e5e9;
             border-radius: 8px;
             font-size: 1.1rem;
-            font-weight: bold;
-            width: 180px;
-            background: white;
+            font-weight: 600;
+            background: #f8f9fa;
             min-height: 44px;
+        }
+
+        .fund-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .inheritance-note {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .inheritance-calculation {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #fff3cd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        .total-funds {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .total-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .total-label {
+            font-size: 1rem;
+            opacity: 0.9;
         }
 
         .costs-table {
@@ -249,14 +313,9 @@
                 width: 100%;
             }
 
-            .funds-input {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
-            }
-
-            .funds-input input {
-                width: 100%;
+            .funds-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
             }
 
             .scenarios-grid {
@@ -294,6 +353,14 @@
             .remaining-amount {
                 font-size: 1.3rem;
             }
+
+            .funds-section {
+                padding: 20px;
+            }
+
+            .total-amount {
+                font-size: 1.7rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -319,6 +386,10 @@
             .property-selector {
                 padding: 15px;
             }
+
+            .fund-item {
+                padding: 15px;
+            }
         }
     </style>
 
@@ -339,10 +410,35 @@
         </div>
 
         <div class="funds-section">
-            <h3>Available Funds</h3>
-            <div class="funds-input">
-                <label>Total Available: €</label>
-                <input type="number" id="availableFunds" value="557856" min="0" step="1000">
+            <h3>💰 Available Funds Breakdown</h3>
+            <div class="funds-grid">
+                <div class="fund-item">
+                    <label for="mortgageFunds" class="fund-label">💳 Mortgage Amount</label>
+                    <input type="number" id="mortgageFunds" class="fund-input" value="0" min="0" step="1000" placeholder="350000">
+                </div>
+
+                <div class="fund-item">
+                    <label for="savingsFunds" class="fund-label">💰 Savings</label>
+                    <input type="number" id="savingsFunds" class="fund-input" value="0" min="0" step="1000" placeholder="100000">
+                </div>
+
+                <div class="fund-item">
+                    <label for="inheritanceFunds" class="fund-label">🏠 Inheritance (Gross Amount)</label>
+                    <input type="number" id="inheritanceFunds" class="fund-input" value="0" min="0" step="1000" placeholder="200000">
+                    <div class="inheritance-note">
+                        <strong>Note:</strong> Net amount will be calculated automatically<br>
+                        • Estate Agent Fee: 1.25% of gross amount<br>
+                        • Solicitor Costs: €2,000 fixed fee
+                    </div>
+                    <div id="inheritanceCalculation" class="inheritance-calculation" style="display: none;">
+                        <!-- Calculation details will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="total-funds">
+                <div class="total-amount" id="totalFundsDisplay">€0</div>
+                <div class="total-label">Total Available Funds</div>
             </div>
         </div>
 
@@ -473,6 +569,42 @@
             }
         }
 
+        function calculateInheritance() {
+            const grossAmount = parseFloat(document.getElementById('inheritanceFunds').value) || 0;
+            const calculationDiv = document.getElementById('inheritanceCalculation');
+
+            if (grossAmount === 0) {
+                calculationDiv.style.display = 'none';
+                return 0;
+            }
+
+            const eaFee = grossAmount * 0.0125; // 1.25%
+            const solicitorFee = 2000;
+            const netAmount = grossAmount - eaFee - solicitorFee;
+
+            calculationDiv.innerHTML = `
+                <strong>Inheritance Calculation:</strong><br>
+                Gross Amount: €${grossAmount.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
+                Less EA Fee (1.25%): -€${eaFee.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
+                Less Solicitor: -€${solicitorFee.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
+                <strong>Net Available: €${netAmount.toLocaleString('en-IE', {minimumFractionDigits: 0})}</strong>
+            `;
+            calculationDiv.style.display = 'block';
+
+            return Math.max(0, netAmount);
+        }
+
+        function updateTotalFunds() {
+            const mortgage = parseFloat(document.getElementById('mortgageFunds').value) || 0;
+            const savings = parseFloat(document.getElementById('savingsFunds').value) || 0;
+            const netInheritance = calculateInheritance();
+
+            const total = mortgage + savings + netInheritance;
+            document.getElementById('totalFundsDisplay').textContent = `€${total.toLocaleString('en-IE', {minimumFractionDigits: 0})}`;
+
+            return total;
+        }
+
         function calculateStampDuty(housePrice) {
             return housePrice * 0.01;
         }
@@ -497,7 +629,7 @@
             const costs = getAllCosts();
             const totalOtherCosts = Object.values(costs).reduce((sum, cost) => sum + cost, 0);
             const totalCost = adjustedPrice + stampDuty + totalOtherCosts;
-            const availableFunds = parseFloat(document.getElementById('availableFunds').value) || 0;
+            const availableFunds = updateTotalFunds();
             const remainingMoney = availableFunds - totalCost;
 
             return {
@@ -600,6 +732,16 @@
             }
         });
 
+        // Auto-update funds when any fund input changes
+        document.querySelectorAll('#mortgageFunds, #savingsFunds, #inheritanceFunds').forEach(input => {
+            input.addEventListener('input', () => {
+                updateTotalFunds();
+                if (currentHousePrice > 0) {
+                    calculateAll();
+                }
+            });
+        });
+
         // Auto-calculate when any cost input changes
         document.querySelectorAll('input[type="number"]').forEach(input => {
             input.addEventListener('input', () => {
@@ -609,8 +751,14 @@
             });
         });
 
+        // Initialize with example values
+        document.getElementById('mortgageFunds').value = 340000;
+        document.getElementById('savingsFunds').value = 100000;
+        document.getElementById('inheritanceFunds').value = 200000;
+
         // Initialize
         loadProperties();
+        updateTotalFunds();
     </script>
 
 <?php include 'footer.php'; ?>

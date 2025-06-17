@@ -1,40 +1,4 @@
-.funds-section {
-background: #e8f4fd;
-padding: 25px;
-border-radius: 12px;
-margin-bottom: 25px;
-}
-
-.funds-section h3 {
-margin-bottom: 20px;
-color: #333;
-font-size: 1.2rem;
-text-align: center;
-}
-
-.funds-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-gap: 15px;
-margin-bottom: 20px;
-}
-
-.fund-item {
-background: white;
-padding: 15px;
-border-radius: 8px;
-border: 2px solid #ddd;
-transition: all 0.3s ease;
-}
-
-.fund-item:focus-within {
-border-color: #667eea;
-box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.fund-label {
-display: block;
-font<?php include 'header.php'; ?>
+<?php include 'header.php'; ?>
 
 <!-- Page-specific mobile-friendly styles for calculator -->
 <style>

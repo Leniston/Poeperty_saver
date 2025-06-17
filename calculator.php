@@ -504,13 +504,11 @@
                 <div class="fund-item">
                     <label for="inheritanceFunds" class="fund-label">🏠 Inheritance (House Sale Price)</label>
                     <input type="number" id="inheritanceFunds" class="fund-input" value="370000" min="0" step="1000" placeholder="370000">
-                    <div class="inheritance-note">
-                        <strong>Note:</strong>50% share calculated automatically<br>
-                        • Estate Agent Fee: 1.25% of sale price<br>
-                        • Solicitor Costs: €2,000 fixed fee<br>
-                        • Your share: 50% of net proceeds
+                    <div class="inheritance-toggle" onclick="toggleInheritanceCalc()" style="display: none;" id="inheritanceToggle">
+                        <span>View calculation breakdown</span>
+                        <span class="inheritance-toggle-arrow">▼</span>
                     </div>
-                    <div id="inheritanceCalculation" class="inheritance-calculation" style="display: none;">
+                    <div id="inheritanceCalculation" class="inheritance-calculation collapsed">
                         <!-- Calculation details will appear here -->
                     </div>
                 </div>
@@ -680,12 +678,37 @@
             }
         }
 
+        // Toggle inheritance calculation visibility
+        function toggleInheritanceCalc() {
+            const calc = document.getElementById('inheritanceCalculation');
+            const toggle = document.getElementById('inheritanceToggle');
+            const arrow = toggle.querySelector('.inheritance-toggle-arrow');
+            const text = toggle.querySelector('span:first-child');
+
+            if (calc.classList.contains('collapsed')) {
+                calc.classList.remove('collapsed');
+                calc.classList.add('expanded');
+                arrow.classList.add('expanded');
+                arrow.textContent = '▲';
+                text.textContent = 'Hide calculation breakdown';
+            } else {
+                calc.classList.remove('expanded');
+                calc.classList.add('collapsed');
+                arrow.classList.remove('expanded');
+                arrow.textContent = '▼';
+                text.textContent = 'View calculation breakdown';
+            }
+        }
+
         function calculateInheritance() {
             const houseSalePrice = parseFloat(document.getElementById('inheritanceFunds').value) || 0;
             const calculationDiv = document.getElementById('inheritanceCalculation');
+            const toggleDiv = document.getElementById('inheritanceToggle');
 
             if (houseSalePrice === 0) {
-                calculationDiv.style.display = 'none';
+                calculationDiv.classList.add('collapsed');
+                calculationDiv.classList.remove('expanded');
+                toggleDiv.style.display = 'none';
                 return 0;
             }
 
@@ -702,7 +725,18 @@
                 Net Proceeds: €${netProceeds.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
                 <strong>Your 50% Share: €${yourShare.toLocaleString('en-IE', {minimumFractionDigits: 0})}</strong>
             `;
-            calculationDiv.style.display = 'block';
+
+            // Show the toggle button when there's a calculation
+            toggleDiv.style.display = 'flex';
+
+            // ALWAYS start collapsed
+            calculationDiv.classList.add('collapsed');
+            calculationDiv.classList.remove('expanded');
+            const arrow = toggleDiv.querySelector('.inheritance-toggle-arrow');
+            const text = toggleDiv.querySelector('span:first-child');
+            arrow.classList.remove('expanded');
+            arrow.textContent = '▼';
+            text.textContent = 'View calculation breakdown';
 
             return Math.max(0, yourShare);
         }

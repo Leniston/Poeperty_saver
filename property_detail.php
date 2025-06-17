@@ -75,6 +75,115 @@
             gap: 10px;
         }
 
+        /* Funds Section Styles */
+        .funds-section {
+            background: #e8f4fd;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #667eea;
+        }
+
+        .funds-section h4 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .funds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .fund-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .fund-item:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .fund-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .fund-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            background: #f8f9fa;
+            min-height: 40px;
+        }
+
+        .fund-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .inheritance-note {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .inheritance-calculation {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #fff3cd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #856404;
+            display: none;
+        }
+
+        .total-funds {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .total-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .total-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .funds-saved-indicator {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            border: 1px solid #c3e6cb;
+        }
+
         .map-container {
             width: 100%;
             height: 400px;
@@ -320,6 +429,14 @@
             .map-container {
                 height: 300px;
             }
+
+            .funds-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .funds-section {
+                padding: 20px;
+            }
         }
     </style>
 
@@ -356,6 +473,43 @@
             </div>
             <p style="color: #666; margin-bottom: 20px;">Cost breakdown for different purchase scenarios</p>
 
+            <div class="funds-section">
+                <div id="fundsLoadedIndicator" class="funds-saved-indicator" style="display: none;">
+                    ✅ Using your saved funds from the calculator
+                </div>
+
+                <h4>💰 Your Available Funds</h4>
+                <div class="funds-grid">
+                    <div class="fund-item">
+                        <label for="detailSavingsFunds" class="fund-label">💰 Cash Savings</label>
+                        <input type="number" id="detailSavingsFunds" class="fund-input" value="0" min="0" step="1000" placeholder="40000">
+                    </div>
+
+                    <div class="fund-item">
+                        <label for="detailMortgageFunds" class="fund-label">💳 Mortgage Amount</label>
+                        <input type="number" id="detailMortgageFunds" class="fund-input" value="0" min="0" step="1000" placeholder="350000">
+                    </div>
+
+                    <div class="fund-item">
+                        <label for="detailInheritanceFunds" class="fund-label">🏠 Inheritance (House Sale Price)</label>
+                        <input type="number" id="detailInheritanceFunds" class="fund-input" value="0" min="0" step="1000" placeholder="370000">
+                        <div class="inheritance-note">
+                            <strong>Note:</strong> Your 50% share calculated automatically<br>
+                            • Estate Agent Fee: 1.25% of sale price<br>
+                            • Solicitor Costs: €2,000 fixed fee
+                        </div>
+                        <div id="detailInheritanceCalculation" class="inheritance-calculation">
+                            <!-- Calculation details will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="total-funds">
+                    <div class="total-amount" id="detailTotalFundsDisplay">€0</div>
+                    <div class="total-label">Total Available Funds</div>
+                </div>
+            </div>
+
             <div class="scenarios-grid" id="financialScenarios">
                 <div class="loading">Calculating financial scenarios...</div>
             </div>
@@ -389,12 +543,114 @@
     <script>
         let propertyId = null;
         let propertyData = null;
-        let mapLoaded = false;
+        let fundsLoaded = false;
 
         // Get property ID from URL parameter
         function getPropertyId() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('id');
+        }
+
+        // Try to load funds from localStorage (saved from calculator/mortgage pages)
+        function loadSavedFunds() {
+            try {
+                const savedFunds = {
+                    savings: localStorage.getItem('calculator_savings') || localStorage.getItem('mortgage_savings'),
+                    mortgage: localStorage.getItem('calculator_mortgage') || localStorage.getItem('mortgage_amount'),
+                    inheritance: localStorage.getItem('calculator_inheritance') || localStorage.getItem('mortgage_inheritance')
+                };
+
+                let hasData = false;
+
+                if (savedFunds.savings && parseFloat(savedFunds.savings) > 0) {
+                    document.getElementById('detailSavingsFunds').value = savedFunds.savings;
+                    hasData = true;
+                }
+
+                if (savedFunds.mortgage && parseFloat(savedFunds.mortgage) > 0) {
+                    document.getElementById('detailMortgageFunds').value = savedFunds.mortgage;
+                    hasData = true;
+                }
+
+                if (savedFunds.inheritance && parseFloat(savedFunds.inheritance) > 0) {
+                    document.getElementById('detailInheritanceFunds').value = savedFunds.inheritance;
+                    hasData = true;
+                }
+
+                if (hasData) {
+                    fundsLoaded = true;
+                    document.getElementById('fundsLoadedIndicator').style.display = 'block';
+                }
+
+                updateDetailFunds();
+                return hasData;
+            } catch (error) {
+                console.log('No saved funds found or localStorage not available');
+                return false;
+            }
+        }
+
+        // Save current funds to localStorage for other pages
+        function saveFundsToStorage() {
+            try {
+                const savings = document.getElementById('detailSavingsFunds').value;
+                const mortgage = document.getElementById('detailMortgageFunds').value;
+                const inheritance = document.getElementById('detailInheritanceFunds').value;
+
+                localStorage.setItem('detail_savings', savings);
+                localStorage.setItem('detail_mortgage', mortgage);
+                localStorage.setItem('detail_inheritance', inheritance);
+            } catch (error) {
+                console.log('Could not save to localStorage');
+            }
+        }
+
+        function calculateDetailInheritance() {
+            const houseSalePrice = parseFloat(document.getElementById('detailInheritanceFunds').value) || 0;
+            const calculationDiv = document.getElementById('detailInheritanceCalculation');
+
+            if (houseSalePrice === 0) {
+                calculationDiv.style.display = 'none';
+                return 0;
+            }
+
+            const eaFee = houseSalePrice * 0.0125; // 1.25% of full sale price
+            const solicitorFee = 2000;
+            const netProceeds = houseSalePrice - eaFee - solicitorFee;
+            const yourShare = netProceeds * 0.5; // 50% of net proceeds
+
+            calculationDiv.innerHTML = `
+                <strong>Inheritance Calculation:</strong><br>
+                House Sale Price: €${houseSalePrice.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
+                Less EA Fee (1.25%): -€${eaFee.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
+                Less Solicitor: -€${solicitorFee.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
+                Net Proceeds: €${netProceeds.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
+                <strong>Your 50% Share: €${yourShare.toLocaleString('en-IE', {minimumFractionDigits: 0})}</strong>
+            `;
+            calculationDiv.style.display = 'block';
+
+            return Math.max(0, yourShare);
+        }
+
+        function updateDetailFunds() {
+            const savings = parseFloat(document.getElementById('detailSavingsFunds').value) || 0;
+            const mortgage = parseFloat(document.getElementById('detailMortgageFunds').value) || 0;
+            const netInheritance = calculateDetailInheritance();
+
+            const totalAvailable = savings + mortgage + netInheritance;
+
+            document.getElementById('detailTotalFundsDisplay').textContent =
+                `€${totalAvailable.toLocaleString('en-IE', {minimumFractionDigits: 0})}`;
+
+            // Save to localStorage for other pages
+            saveFundsToStorage();
+
+            // Recalculate financial scenarios if property data is available
+            if (propertyData) {
+                calculateFinancialScenarios(propertyData);
+            }
+
+            return totalAvailable;
         }
 
         // Load property data
@@ -467,16 +723,6 @@
 
             // Create Google Maps embed
             const encodedAddress = encodeURIComponent(address + ', Ireland');
-            const mapHtml = `
-            <iframe
-                width="100%"
-                height="100%"
-                frameborder="0"
-                style="border:0"
-                src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodedAddress}&zoom=15"
-                allowfullscreen>
-            </iframe>
-        `;
 
             // For demo without API key, use alternative
             const alternativeMapHtml = `
@@ -502,6 +748,9 @@
                 return;
             }
 
+            // Get current available funds
+            const availableFunds = updateDetailFunds();
+
             // Use the same calculation logic as calculator.php
             const scenarios = [
                 { multiplier: 1.0, name: 'Asking Price', class: 'scenario-asking' },
@@ -516,7 +765,6 @@
                 const stampDuty = adjustedPrice * 0.01;
                 const otherCosts = 1900 + 734.31 + 185 + 95 + 21.52 + 33.40 + 66.92 + 1509.80 + 1287; // Sum of all costs
                 const totalCost = adjustedPrice + stampDuty + otherCosts;
-                const availableFunds = 557856; // Default from calculator
                 const remainingMoney = availableFunds - totalCost;
 
                 scenariosHtml += `
@@ -733,8 +981,25 @@
             return notes.replace(/\s*\|\s*Image:\s*https?:\/\/[^\s|]+/g, '').trim();
         }
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', loadPropertyData);
+        // Event listeners for fund inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to fund inputs
+            document.querySelectorAll('#detailSavingsFunds, #detailMortgageFunds, #detailInheritanceFunds').forEach(input => {
+                input.addEventListener('input', updateDetailFunds);
+            });
+
+            // Try to load saved funds first
+            if (!loadSavedFunds()) {
+                // If no saved funds, set some default values to show how it works
+                document.getElementById('detailSavingsFunds').value = 40000;
+                document.getElementById('detailMortgageFunds').value = 350000;
+                document.getElementById('detailInheritanceFunds').value = 370000;
+                updateDetailFunds();
+            }
+
+            // Load property data
+            loadPropertyData();
+        });
     </script>
 
 <?php include 'footer.php'; ?>

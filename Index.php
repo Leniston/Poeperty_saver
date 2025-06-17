@@ -532,52 +532,55 @@
 
             if (properties.length === 0) {
                 grid.innerHTML = `
-                <div class="no-properties">
-                    <h3>No properties saved yet</h3>
-                    <p>Add your first property using the form above!</p>
-                </div>
-            `;
+                    <div class="no-properties">
+                        <h3>No properties saved yet</h3>
+                        <p>Add your first property using the form above!</p>
+                    </div>
+                `;
                 return;
             }
 
             grid.innerHTML = properties.map(property => {
                 const imageUrl = extractImageFromNotes(property.notes);
                 return `
-                <div class="property-card">
-                    ${imageUrl ? `
-                        <div class="property-image">
-                            <img src="${imageUrl}" alt="Property image" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;"
-                                 onerror="this.style.display='none'">
+                    <div class="property-card">
+                        ${imageUrl ? `
+                            <div class="property-image">
+                                <img src="${imageUrl}" alt="Property image" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;"
+                                     onerror="this.style.display='none'">
+                            </div>
+                        ` : ''}
+
+                        <div class="property-header">
+                            <div>
+                                <div class="property-title">${property.title || 'Property'}</div>
+                                <div class="property-date">${new Date(property.date_added).toLocaleDateString()}</div>
+                            </div>
+                            ${property.price ? `<div class="property-price">${property.price}</div>` : ''}
                         </div>
-                    ` : ''}
 
-                    <div class="property-header">
-                        <div>
-                            <div class="property-title">${property.title || 'Property'}</div>
-                            <div class="property-date">${new Date(property.date_added).toLocaleDateString()}</div>
+                        <div class="property-status status-${property.status}">
+                            ${property.status.charAt(0).toUpperCase() + property.status.slice(1)}
                         </div>
-                        ${property.price ? `<div class="property-price">${property.price}</div>` : ''}
-                    </div>
 
-                    <div class="property-status status-${property.status}">
-                        ${property.status.charAt(0).toUpperCase() + property.status.slice(1)}
-                    </div>
+                        ${property.notes ? `<div class="property-notes">${cleanNotesForDisplay(property.notes)}</div>` : ''}
 
-                    ${property.notes ? `<div class="property-notes">${cleanNotesForDisplay(property.notes)}</div>` : ''}
-
-                    <div class="property-actions">
-                        <a href="${property.url}" target="_blank" class="property-link">
-                            <span>🔗</span> View Property
-                        </a>
-                        <button class="btn btn-secondary" onclick="openEditModal(${property.id})" style="padding: 8px 12px; font-size: 0.85rem; flex: none;">
-                            ✏️ Edit
-                        </button>
-                        <button class="btn btn-danger" onclick="deleteProperty(${property.id})" style="padding: 8px 12px; font-size: 0.85rem; flex: none;">
-                            🗑️ Delete
-                        </button>
+                        <div class="property-actions">
+                            <a href="property_detail.php?id=${property.id}" class="property-link" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: 600;">
+                                <span>🔍</span> View Details
+                            </a>
+                            <a href="${property.url}" target="_blank" class="property-link">
+                                <span>🔗</span> View Listing
+                            </a>
+                            <button class="btn btn-secondary" onclick="openEditModal(${property.id})" style="padding: 8px 12px; font-size: 0.85rem; flex: none;">
+                                ✏️ Edit
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteProperty(${property.id})" style="padding: 8px 12px; font-size: 0.85rem; flex: none;">
+                                🗑️ Delete
+                            </button>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
             }).join('');
         }
 

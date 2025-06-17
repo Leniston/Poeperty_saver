@@ -48,28 +48,28 @@
 
         .funds-section {
             background: #e8f4fd;
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
             margin-bottom: 25px;
         }
 
         .funds-section h3 {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             color: #333;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             text-align: center;
         }
 
         .funds-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
         }
 
         .fund-item {
             background: white;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
             border: 2px solid #ddd;
             transition: all 0.3s ease;
@@ -84,19 +84,19 @@
             display: block;
             font-weight: 600;
             color: #333;
-            margin-bottom: 8px;
-            font-size: 1rem;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
         }
 
         .fund-input {
             width: 100%;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border: 2px solid #e1e5e9;
             border-radius: 6px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             background: #f8f9fa;
-            min-height: 40px;
+            min-height: 36px;
         }
 
         .fund-input:focus {
@@ -106,38 +106,38 @@
         }
 
         .inheritance-note {
-            margin-top: 8px;
-            font-size: 0.85rem;
+            margin-top: 6px;
+            font-size: 0.75rem;
             color: #666;
-            line-height: 1.4;
+            line-height: 1.3;
         }
 
         .inheritance-calculation {
-            margin-top: 8px;
-            padding: 8px 12px;
+            margin-top: 6px;
+            padding: 6px 10px;
             background: #fff3cd;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #856404;
         }
 
         .total-funds {
             background: linear-gradient(135deg, #28a745, #20c997);
             color: white;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 15px;
+            border-radius: 10px;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .total-amount {
-            font-size: 2rem;
+            font-size: 1.6rem;
             font-weight: bold;
             margin-bottom: 5px;
         }
 
         .total-label {
-            font-size: 1rem;
+            font-size: 0.9rem;
             opacity: 0.9;
         }
 
@@ -416,11 +416,11 @@
             }
 
             .funds-section {
-                padding: 20px;
+                padding: 15px;
             }
 
             .total-amount {
-                font-size: 1.7rem;
+                font-size: 1.4rem;
             }
 
             .costs-section {

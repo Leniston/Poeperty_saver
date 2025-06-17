@@ -79,6 +79,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
             backdrop-filter: blur(10px);
             font-weight: 500;
             font-size: 0.9rem;
+            position: relative;
         }
 
         .nav-link:hover {
@@ -89,6 +90,66 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         .nav-link.active {
             background: rgba(255,255,255,0.4);
             font-weight: 600;
+        }
+
+        /* Dropdown Menu Styles */
+        .nav-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            min-width: 200px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            margin-top: 5px;
+            padding: 5px 0;
+        }
+
+        .nav-dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-link {
+            display: block;
+            color: #333;
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 0;
+            margin: 0;
+            background: transparent;
+        }
+
+        .dropdown-link:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            transform: none;
+        }
+
+        .dropdown-link.active {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .dropdown-arrow {
+            font-size: 0.7rem;
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-dropdown:hover .dropdown-arrow {
+            transform: rotate(180deg);
         }
 
         /* Common styles for all pages */
@@ -181,6 +242,34 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                 padding: 12px 16px;
             }
 
+            .nav-dropdown {
+                display: block;
+                width: 100%;
+                margin: 3px auto;
+                max-width: 200px;
+            }
+
+            .dropdown-content {
+                position: static;
+                display: none;
+                width: 100%;
+                box-shadow: none;
+                background: rgba(255,255,255,0.9);
+                margin-top: 0;
+                border-radius: 10px;
+                margin-bottom: 10px;
+            }
+
+            .nav-dropdown:hover .dropdown-content,
+            .nav-dropdown.mobile-open .dropdown-content {
+                display: block;
+            }
+
+            .dropdown-link {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+            }
+
             .navigation {
                 margin-bottom: 15px;
             }
@@ -253,17 +342,24 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
             🏠 Property Saver
         </a>
         <a href="location_analyzer.php" class="nav-link <?php echo $current_page === 'location_analyzer' ? 'active' : ''; ?>">
-            🗺️ Location Analyzer
+            📏 Distance Checker
         </a>
         <a href="area_checker.php" class="nav-link <?php echo $current_page === 'area_checker' ? 'active' : ''; ?>">
-            🏘️ Area Checker
+            🏘️ Area Info Checker
         </a>
-        <a href="calculator.php" class="nav-link <?php echo $current_page === 'calculator' ? 'active' : ''; ?>">
-            💰 Property Calculator
-        </a>
-        <a href="mortgage.php" class="nav-link <?php echo $current_page === 'mortgage' ? 'active' : ''; ?>">
-            📊 Mortgage Calculator
-        </a>
+        <div class="nav-dropdown">
+            <a href="#" class="nav-link <?php echo ($current_page === 'calculator' || $current_page === 'mortgage') ? 'active' : ''; ?>">
+                💰 Financial Services <span class="dropdown-arrow">▼</span>
+            </a>
+            <div class="dropdown-content">
+                <a href="calculator.php" class="dropdown-link <?php echo $current_page === 'calculator' ? 'active' : ''; ?>">
+                    💰 Property Calculator
+                </a>
+                <a href="mortgage.php" class="dropdown-link <?php echo $current_page === 'mortgage' ? 'active' : ''; ?>">
+                    📊 Mortgage Calculator
+                </a>
+            </div>
+        </div>
     </div>
 
     <div id="alert" class="alert"></div>

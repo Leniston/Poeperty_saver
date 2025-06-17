@@ -508,7 +508,7 @@
                         <span>View calculation breakdown</span>
                         <span class="inheritance-toggle-arrow">▼</span>
                     </div>
-                    <div id="inheritanceCalculation" class="inheritance-calculation collapsed">
+                    <div id="inheritanceCalculation" class="inheritance-calculation" style="display: none;">
                         <!-- Calculation details will appear here -->
                     </div>
                 </div>
@@ -685,15 +685,13 @@
             const arrow = toggle.querySelector('.inheritance-toggle-arrow');
             const text = toggle.querySelector('span:first-child');
 
-            if (calc.classList.contains('collapsed')) {
-                calc.classList.remove('collapsed');
-                calc.classList.add('expanded');
+            if (calc.style.display === 'none') {
+                calc.style.display = 'block';
                 arrow.classList.add('expanded');
                 arrow.textContent = '▲';
                 text.textContent = 'Hide calculation breakdown';
             } else {
-                calc.classList.remove('expanded');
-                calc.classList.add('collapsed');
+                calc.style.display = 'none';
                 arrow.classList.remove('expanded');
                 arrow.textContent = '▼';
                 text.textContent = 'View calculation breakdown';
@@ -706,8 +704,7 @@
             const toggleDiv = document.getElementById('inheritanceToggle');
 
             if (houseSalePrice === 0) {
-                calculationDiv.classList.add('collapsed');
-                calculationDiv.classList.remove('expanded');
+                calculationDiv.style.display = 'none';
                 toggleDiv.style.display = 'none';
                 return 0;
             }
@@ -729,9 +726,8 @@
             // Show the toggle button when there's a calculation
             toggleDiv.style.display = 'flex';
 
-            // ALWAYS start collapsed
-            calculationDiv.classList.add('collapsed');
-            calculationDiv.classList.remove('expanded');
+            // ALWAYS keep calculation hidden initially
+            calculationDiv.style.display = 'none';
             const arrow = toggleDiv.querySelector('.inheritance-toggle-arrow');
             const text = toggleDiv.querySelector('span:first-child');
             arrow.classList.remove('expanded');

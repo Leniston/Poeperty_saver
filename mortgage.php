@@ -46,6 +46,12 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        .input-group input.readonly {
+            background: #e9ecef;
+            color: #495057;
+            cursor: not-allowed;
+        }
+
         .currency-input {
             position: relative;
         }
@@ -105,6 +111,201 @@
         .quick-btn:hover {
             background: #667eea;
             color: white;
+        }
+
+        /* Funds Section Styles */
+        .funds-section {
+            background: #e8f4fd;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #667eea;
+        }
+
+        .funds-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+
+        .funds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .fund-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .fund-item:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .fund-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .fund-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            background: #f8f9fa;
+            min-height: 40px;
+        }
+
+        .fund-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .inheritance-note {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .inheritance-calculation {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #fff3cd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        .mortgage-control {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 2px solid #667eea;
+        }
+
+        .mortgage-control h4 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .available-funds-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .funds-breakdown {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .fund-amount {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.9rem;
+        }
+
+        .fund-amount strong {
+            color: #667eea;
+        }
+
+        .slider-container {
+            margin: 20px 0;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider:hover {
+            opacity: 1;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .down-payment-display {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .mortgage-result {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .mortgage-amount {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .mortgage-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
         }
 
         .best-deal-banner {
@@ -329,18 +530,95 @@
             .comparison-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            .funds-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .funds-section {
+                padding: 20px;
+            }
+
+            .mortgage-control {
+                padding: 15px;
+            }
         }
     </style>
 
     <div class="content-section">
         <h2 style="margin-bottom: 25px; color: #333; text-align: center;">Compare Real Lender Rates & Find the Best Deal</h2>
 
+        <div class="funds-section">
+            <h3>💰 Your Available Funds</h3>
+            <div class="funds-grid">
+                <div class="fund-item">
+                    <label for="savingsFunds" class="fund-label">💰 Cash Savings</label>
+                    <input type="number" id="savingsFunds" class="fund-input" value="40000" min="0" step="1000" placeholder="40000">
+                </div>
+
+                <div class="fund-item">
+                    <label for="inheritanceFunds" class="fund-label">🏠 Inheritance (House Sale Price)</label>
+                    <input type="number" id="inheritanceFunds" class="fund-input" value="370000" min="0" step="1000" placeholder="370000">
+                    <div class="inheritance-note">
+                        <strong>Note:</strong> Your 50% share calculated automatically<br>
+                        • Estate Agent Fee: 1.25% of sale price<br>
+                        • Solicitor Costs: €2,000 fixed fee
+                    </div>
+                    <div id="inheritanceCalculation" class="inheritance-calculation" style="display: none;">
+                        <!-- Calculation details will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="mortgage-control">
+                <h4>🏦 Mortgage & Down Payment Control</h4>
+
+                <div class="available-funds-summary">
+                    <div class="funds-breakdown">
+                        <div class="fund-amount">
+                            <strong>€<span id="availableSavings">0</span></strong><br>
+                            <small>Cash Savings</small>
+                        </div>
+                        <div class="fund-amount">
+                            <strong>€<span id="availableInheritance">0</span></strong><br>
+                            <small>Net Inheritance</small>
+                        </div>
+                        <div class="fund-amount">
+                            <strong>€<span id="totalAvailableFunds">0</span></strong><br>
+                            <small>Total Available</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Down Payment from Your Funds</span>
+                        <span id="downPaymentAmount">€0</span>
+                    </div>
+                    <input type="range" id="downPaymentSlider" class="slider" min="0" max="100" value="0" step="1000">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #666; margin-top: 5px;">
+                        <span>€0</span>
+                        <span id="maxDownPayment">€0</span>
+                    </div>
+                </div>
+
+                <div class="down-payment-display">
+                    <strong>Down Payment: €<span id="downPaymentDisplay">0</span></strong>
+                </div>
+
+                <div class="mortgage-result">
+                    <div class="mortgage-amount">€<span id="finalMortgageAmount">0</span></div>
+                    <div class="mortgage-label">Required Mortgage Amount</div>
+                </div>
+            </div>
+        </div>
+
         <div class="input-section">
             <div class="input-row">
                 <div class="input-group">
                     <label for="houseValue">House Value</label>
                     <div class="currency-input">
-                        <input type="number" id="houseValue" value="500000" min="50000" step="5000" placeholder="500000">
+                        <input type="number" id="houseValue" value="515000" min="50000" step="5000" placeholder="500000">
                     </div>
                     <div class="quick-amounts">
                         <button class="quick-btn" onclick="setHouseValue(400000)">€400k</button>
@@ -353,13 +631,9 @@
                 <div class="input-group">
                     <label for="mortgageAmount">Mortgage Amount</label>
                     <div class="currency-input">
-                        <input type="number" id="mortgageAmount" value="400000" min="10000" step="5000" placeholder="400000">
+                        <input type="number" id="mortgageAmount" class="readonly" readonly>
                     </div>
-                    <div class="quick-amounts">
-                        <button class="quick-btn" onclick="setLTV(80)">80% LTV</button>
-                        <button class="quick-btn" onclick="setLTV(90)">90% LTV</button>
-                        <button class="quick-btn" onclick="setLTV(95)">95% LTV</button>
-                    </div>
+                    <small style="color: #666; font-size: 0.8rem;">Automatically calculated from slider above</small>
                 </div>
 
                 <div class="input-group">
@@ -519,6 +793,72 @@
             }
         ];
 
+        function calculateInheritance() {
+            const houseSalePrice = parseFloat(document.getElementById('inheritanceFunds').value) || 0;
+            const calculationDiv = document.getElementById('inheritanceCalculation');
+
+            if (houseSalePrice === 0) {
+                calculationDiv.style.display = 'none';
+                return 0;
+            }
+
+            const eaFee = houseSalePrice * 0.0125; // 1.25% of full sale price
+            const solicitorFee = 2000;
+            const netProceeds = houseSalePrice - eaFee - solicitorFee;
+            const yourShare = netProceeds * 0.5; // 50% of net proceeds
+
+            calculationDiv.innerHTML = `
+                <strong>Inheritance Calculation:</strong><br>
+                House Sale Price: €${houseSalePrice.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
+                Less EA Fee (1.25%): -€${eaFee.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
+                Less Solicitor: -€${solicitorFee.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
+                Net Proceeds: €${netProceeds.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
+                <strong>Your 50% Share: €${yourShare.toLocaleString('en-IE', {minimumFractionDigits: 0})}</strong>
+            `;
+            calculationDiv.style.display = 'block';
+
+            return Math.max(0, yourShare);
+        }
+
+        function updateAvailableFunds() {
+            const savings = parseFloat(document.getElementById('savingsFunds').value) || 0;
+            const netInheritance = calculateInheritance();
+            const totalAvailable = savings + netInheritance;
+
+            // Update display
+            document.getElementById('availableSavings').textContent = savings.toLocaleString('en-IE', {minimumFractionDigits: 0});
+            document.getElementById('availableInheritance').textContent = netInheritance.toLocaleString('en-IE', {minimumFractionDigits: 0});
+            document.getElementById('totalAvailableFunds').textContent = totalAvailable.toLocaleString('en-IE', {minimumFractionDigits: 0});
+
+            // Update slider max
+            const slider = document.getElementById('downPaymentSlider');
+            slider.max = totalAvailable;
+            document.getElementById('maxDownPayment').textContent = '€' + totalAvailable.toLocaleString('en-IE', {minimumFractionDigits: 0});
+
+            // Reset slider if current value exceeds new max
+            if (parseFloat(slider.value) > totalAvailable) {
+                slider.value = totalAvailable;
+            }
+
+            updateMortgageCalculation();
+            return totalAvailable;
+        }
+
+        function updateMortgageCalculation() {
+            const houseValue = parseFloat(document.getElementById('houseValue').value) || 0;
+            const downPayment = parseFloat(document.getElementById('downPaymentSlider').value) || 0;
+            const requiredMortgage = Math.max(0, houseValue - downPayment);
+
+            // Update displays
+            document.getElementById('downPaymentAmount').textContent = '€' + downPayment.toLocaleString('en-IE', {minimumFractionDigits: 0});
+            document.getElementById('downPaymentDisplay').textContent = downPayment.toLocaleString('en-IE', {minimumFractionDigits: 0});
+            document.getElementById('mortgageAmount').value = requiredMortgage;
+            document.getElementById('finalMortgageAmount').textContent = requiredMortgage.toLocaleString('en-IE', {minimumFractionDigits: 0});
+
+            updateLTV();
+            return requiredMortgage;
+        }
+
         function updateLTV() {
             const houseValue = parseFloat(document.getElementById('houseValue').value) || 0;
             const mortgageAmount = parseFloat(document.getElementById('mortgageAmount').value) || 0;
@@ -533,14 +873,7 @@
 
         function setHouseValue(value) {
             document.getElementById('houseValue').value = value;
-            updateLTV();
-        }
-
-        function setLTV(percentage) {
-            const houseValue = parseFloat(document.getElementById('houseValue').value) || 0;
-            const mortgageAmount = houseValue * (percentage / 100);
-            document.getElementById('mortgageAmount').value = Math.round(mortgageAmount);
-            updateLTV();
+            updateMortgageCalculation();
         }
 
         function calculateMonthlyPayment(principal, annualRate, years) {
@@ -806,16 +1139,30 @@
             showAlert(`Compared ${applicableProducts.length} mortgage products - showing top ${Math.min(8, applicableProducts.length)} deals`);
         }
 
-        // Auto-update LTV when inputs change
-        document.getElementById('houseValue').addEventListener('input', updateLTV);
-        document.getElementById('mortgageAmount').addEventListener('input', updateLTV);
+        // Event listeners
+        document.getElementById('houseValue').addEventListener('input', updateMortgageCalculation);
+        document.getElementById('mortgageTerm').addEventListener('input', () => {
+            if (parseFloat(document.getElementById('mortgageAmount').value) > 0) {
+                calculatePayments();
+            }
+        });
 
-        // Initialize with your example values to match Doddl
-        document.getElementById('houseValue').value = 515000;
-        document.getElementById('mortgageAmount').value = 340000;
-        document.getElementById('mortgageTerm').value = 30;
-        updateLTV();
-        calculatePayments(); // Show initial calculation with your example
+        // Auto-update funds when any fund input changes
+        document.querySelectorAll('#savingsFunds, #inheritanceFunds').forEach(input => {
+            input.addEventListener('input', () => {
+                updateAvailableFunds();
+            });
+        });
+
+        // Slider event listener
+        document.getElementById('downPaymentSlider').addEventListener('input', () => {
+            updateMortgageCalculation();
+        });
+
+        // Initialize
+        updateAvailableFunds();
+        updateMortgageCalculation();
+        calculatePayments(); // Show initial calculation with example values
     </script>
 
 <?php include 'footer.php'; ?>

@@ -515,7 +515,7 @@
             </div>
         </div>
 
-        <!-- Distance Analysis Section -->
+        <!-- Distance Analysis Section 
         <div class="detail-section">
             <div class="section-title">
                 📏 Distance to Key Locations
@@ -527,7 +527,7 @@
             </div>
         </div>
 
-        <!-- Area Information Section -->
+        <!-- Area Information Section
         <div class="detail-section">
             <div class="section-title">
                 🏘️ Local Area Information
@@ -538,7 +538,7 @@
                 <div class="loading">Loading area information...</div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <script>
         let propertyId = null;

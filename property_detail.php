@@ -487,7 +487,7 @@
 
                     <div class="fund-item">
                         <label for="detailMortgageFunds" class="fund-label">💳 Mortgage Amount</label>
-                        <input type="number" id="detailMortgageFunds" class="fund-input" value="0" min="0" step="1000" placeholder="350000">
+                        <input type="number" id="detailMortgageFunds" class="fund-input" value="0" min="0" step="1000" placeholder="330000">
                     </div>
 
                     <div class="fund-item">
@@ -544,6 +544,16 @@
         let propertyId = null;
         let propertyData = null;
         let fundsLoaded = false;
+        let calculationTimeout = null; // Debounce calculations
+        let isCalculating = false; // Prevent multiple simultaneous calculations
+
+        // Debounced calculation function
+        function debouncedCalculation(callback, delay = 300) {
+            if (calculationTimeout) {
+                clearTimeout(calculationTimeout);
+            }
+            calculationTimeout = setTimeout(callback, delay);
+        }
 
         // Get property ID from URL parameter
         function getPropertyId() {
@@ -551,37 +561,53 @@
             return urlParams.get('id');
         }
 
-        // Try to load funds from localStorage (saved from calculator/mortgage pages)
+        // Optimized localStorage operations with error handling
         function loadSavedFunds() {
             try {
+                // Only access localStorage once per key
+                const keys = ['calculator_savings', 'mortgage_savings', 'calculator_mortgage', 'mortgage_amount', 'calculator_inheritance', 'mortgage_inheritance'];
+                const values = {};
+
+                // Batch localStorage reads
+                keys.forEach(key => {
+                    try {
+                        values[key] = localStorage.getItem(key);
+                    } catch (e) {
+                        // Ignore individual key errors
+                    }
+                });
+
                 const savedFunds = {
-                    savings: localStorage.getItem('calculator_savings') || localStorage.getItem('mortgage_savings'),
-                    mortgage: localStorage.getItem('calculator_mortgage') || localStorage.getItem('mortgage_amount'),
-                    inheritance: localStorage.getItem('calculator_inheritance') || localStorage.getItem('mortgage_inheritance')
+                    savings: values.calculator_savings || values.mortgage_savings,
+                    mortgage: values.calculator_mortgage || values.mortgage_amount,
+                    inheritance: values.calculator_inheritance || values.mortgage_inheritance
                 };
 
                 let hasData = false;
+                const elements = {
+                    savings: document.getElementById('detailSavingsFunds'),
+                    mortgage: document.getElementById('detailMortgageFunds'),
+                    inheritance: document.getElementById('detailInheritanceFunds')
+                };
 
-                if (savedFunds.savings && parseFloat(savedFunds.savings) > 0) {
-                    document.getElementById('detailSavingsFunds').value = savedFunds.savings;
-                    hasData = true;
-                }
+                // Batch DOM updates
+                Object.keys(savedFunds).forEach(key => {
+                    const value = savedFunds[key];
+                    const element = elements[key];
 
-                if (savedFunds.mortgage && parseFloat(savedFunds.mortgage) > 0) {
-                    document.getElementById('detailMortgageFunds').value = savedFunds.mortgage;
-                    hasData = true;
-                }
-
-                if (savedFunds.inheritance && parseFloat(savedFunds.inheritance) > 0) {
-                    document.getElementById('detailInheritanceFunds').value = savedFunds.inheritance;
-                    hasData = true;
-                }
+                    if (value && parseFloat(value) > 0 && element) {
+                        element.value = value;
+                        hasData = true;
+                    }
+                });
 
                 if (hasData) {
                     fundsLoaded = true;
-                    document.getElementById('fundsLoadedIndicator').style.display = 'block';
+                    const indicator = document.getElementById('fundsLoadedIndicator');
+                    if (indicator) indicator.style.display = 'block';
                 }
 
+                // Single calculation call instead of multiple
                 updateDetailFunds();
                 return hasData;
             } catch (error) {
@@ -590,36 +616,62 @@
             }
         }
 
-        // Save current funds to localStorage for other pages
+        // Optimized localStorage save with batching
         function saveFundsToStorage() {
-            try {
-                const savings = document.getElementById('detailSavingsFunds').value;
-                const mortgage = document.getElementById('detailMortgageFunds').value;
-                const inheritance = document.getElementById('detailInheritanceFunds').value;
+            if (isCalculating) return; // Don't save during calculations
 
-                localStorage.setItem('detail_savings', savings);
-                localStorage.setItem('detail_mortgage', mortgage);
-                localStorage.setItem('detail_inheritance', inheritance);
+            try {
+                const elements = {
+                    savings: document.getElementById('detailSavingsFunds'),
+                    mortgage: document.getElementById('detailMortgageFunds'),
+                    inheritance: document.getElementById('detailInheritanceFunds')
+                };
+
+                // Batch localStorage writes
+                const updates = {
+                    'detail_savings': elements.savings?.value || '0',
+                    'detail_mortgage': elements.mortgage?.value || '0',
+                    'detail_inheritance': elements.inheritance?.value || '0'
+                };
+
+                Object.entries(updates).forEach(([key, value]) => {
+                    localStorage.setItem(key, value);
+                });
             } catch (error) {
                 console.log('Could not save to localStorage');
             }
         }
 
+        // Optimized inheritance calculation with caching
+        let inheritanceCache = {};
         function calculateDetailInheritance() {
             const houseSalePrice = parseFloat(document.getElementById('detailInheritanceFunds').value) || 0;
             const calculationDiv = document.getElementById('detailInheritanceCalculation');
 
+            // Use cache if same value
+            if (inheritanceCache[houseSalePrice] !== undefined) {
+                if (houseSalePrice === 0) {
+                    calculationDiv.style.display = 'none';
+                } else {
+                    calculationDiv.innerHTML = inheritanceCache.html || '';
+                    calculationDiv.style.display = 'block';
+                }
+                return inheritanceCache[houseSalePrice];
+            }
+
             if (houseSalePrice === 0) {
                 calculationDiv.style.display = 'none';
+                inheritanceCache[houseSalePrice] = 0;
                 return 0;
             }
 
-            const eaFee = houseSalePrice * 0.0125; // 1.25% of full sale price
+            const eaFee = houseSalePrice * 0.0125;
             const solicitorFee = 2000;
             const netProceeds = houseSalePrice - eaFee - solicitorFee;
-            const yourShare = netProceeds * 0.5; // 50% of net proceeds
+            const yourShare = Math.max(0, netProceeds * 0.5);
 
-            calculationDiv.innerHTML = `
+            // Cache the HTML to avoid regenerating
+            const html = `
                 <strong>Inheritance Calculation:</strong><br>
                 House Sale Price: €${houseSalePrice.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
                 Less EA Fee (1.25%): -€${eaFee.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
@@ -627,33 +679,75 @@
                 Net Proceeds: €${netProceeds.toLocaleString('en-IE', {minimumFractionDigits: 0})}<br>
                 <strong>Your 50% Share: €${yourShare.toLocaleString('en-IE', {minimumFractionDigits: 0})}</strong>
             `;
+
+            calculationDiv.innerHTML = html;
             calculationDiv.style.display = 'block';
 
-            return Math.max(0, yourShare);
+            // Cache both value and HTML
+            inheritanceCache[houseSalePrice] = yourShare;
+            inheritanceCache.html = html;
+
+            return yourShare;
         }
 
+        // Optimized funds update with minimal DOM manipulation
+        let lastTotalFunds = null;
         function updateDetailFunds() {
-            const savings = parseFloat(document.getElementById('detailSavingsFunds').value) || 0;
-            const mortgage = parseFloat(document.getElementById('detailMortgageFunds').value) || 0;
-            const netInheritance = calculateDetailInheritance();
+            if (isCalculating) return; // Prevent recursive calls
 
-            const totalAvailable = savings + mortgage + netInheritance;
+            isCalculating = true;
 
-            document.getElementById('detailTotalFundsDisplay').textContent =
-                `€${totalAvailable.toLocaleString('en-IE', {minimumFractionDigits: 0})}`;
+            try {
+                const savings = parseFloat(document.getElementById('detailSavingsFunds').value) || 0;
+                const mortgage = parseFloat(document.getElementById('detailMortgageFunds').value) || 0;
+                const netInheritance = calculateDetailInheritance();
 
-            // Save to localStorage for other pages
-            saveFundsToStorage();
+                const totalAvailable = savings + mortgage + netInheritance;
 
-            // Recalculate financial scenarios if property data is available
-            if (propertyData) {
-                calculateFinancialScenarios(propertyData);
+                // Only update DOM if value changed
+                if (lastTotalFunds !== totalAvailable) {
+                    document.getElementById('detailTotalFundsDisplay').textContent =
+                        `€${totalAvailable.toLocaleString('en-IE', {minimumFractionDigits: 0})}`;
+                    lastTotalFunds = totalAvailable;
+                }
+
+                // Debounced localStorage save
+                debouncedCalculation(() => saveFundsToStorage(), 500);
+
+                // Debounced financial scenario recalculation
+                if (propertyData) {
+                    debouncedCalculation(() => {
+                        if (!isCalculating) {
+                            calculateFinancialScenarios(propertyData);
+                        }
+                    }, 800);
+                }
+
+                return totalAvailable;
+            } finally {
+                isCalculating = false;
             }
-
-            return totalAvailable;
         }
 
-        // Load property data
+        // Optimized input event handlers with debouncing
+        function setupFundInputHandlers() {
+            const inputs = ['detailSavingsFunds', 'detailMortgageFunds', 'detailInheritanceFunds'];
+
+            inputs.forEach(inputId => {
+                const element = document.getElementById(inputId);
+                if (element) {
+                    // Remove any existing listeners
+                    element.removeEventListener('input', updateDetailFunds);
+
+                    // Add debounced listener
+                    element.addEventListener('input', () => {
+                        debouncedCalculation(updateDetailFunds, 150);
+                    });
+                }
+            });
+        }
+
+        // Optimized property loading with better error handling
         async function loadPropertyData() {
             propertyId = getPropertyId();
 
@@ -663,8 +757,12 @@
             }
 
             try {
-                // Get property details from backend
                 const response = await fetch(`backend.php?endpoint=properties`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const result = await response.json();
 
                 if (result.success) {
@@ -673,10 +771,21 @@
                     if (property) {
                         propertyData = property;
                         displayPropertyInfo(property);
-                        await loadGoogleMap(property);
-                        await calculateFinancialScenarios(property);
-                        await analyzeDistances(property);
-                        await loadAreaInformation(property);
+
+                        // Run these in parallel instead of sequentially
+                        Promise.allSettled([
+                            loadGoogleMap(property),
+                            calculateFinancialScenarios(property),
+                            analyzeDistances(property),
+                            loadAreaInformation(property)
+                        ]).then(results => {
+                            // Log any failures but don't stop execution
+                            results.forEach((result, index) => {
+                                if (result.status === 'rejected') {
+                                    console.warn(`Task ${index} failed:`, result.reason);
+                                }
+                            });
+                        });
                     } else {
                         showAlert('Property not found', 'error');
                     }
@@ -687,27 +796,112 @@
             }
         }
 
+        // Optimized financial scenarios with caching
+        let scenarioCache = {};
+        async function calculateFinancialScenarios(property) {
+            const price = extractPrice(property.price);
+
+            if (!price) {
+                document.getElementById('financialScenarios').innerHTML =
+                    '<div class="error">Unable to calculate financial scenarios - price not available</div>';
+                return;
+            }
+
+            const availableFunds = lastTotalFunds || updateDetailFunds();
+            const cacheKey = `${price}_${availableFunds}`;
+
+            // Use cache if available
+            if (scenarioCache[cacheKey]) {
+                document.getElementById('financialScenarios').innerHTML = scenarioCache[cacheKey];
+                return;
+            }
+
+            const scenarios = [
+                { multiplier: 1.0, name: 'Asking Price', class: 'scenario-asking' },
+                { multiplier: 1.10, name: '10% Over Asking', class: 'scenario-10' },
+                { multiplier: 1.15, name: '15% Over Asking', class: 'scenario-15' }
+            ];
+
+            // Pre-calculate fixed costs once
+            const fixedCosts = 1900 + 734.31 + 185 + 95 + 21.52 + 33.40 + 66.92 + 1509.80 + 1287;
+
+            let scenariosHtml = '';
+
+            scenarios.forEach(scenario => {
+                const adjustedPrice = price * scenario.multiplier;
+                const stampDuty = adjustedPrice * 0.01;
+                const totalCost = adjustedPrice + stampDuty + fixedCosts;
+                const remainingMoney = availableFunds - totalCost;
+
+                scenariosHtml += `
+                <div class="scenario-card ${scenario.class}">
+                    <div class="scenario-title">${scenario.name}</div>
+                    <div class="cost-breakdown">
+                        <div class="cost-item">
+                            <span class="cost-label">House Price:</span>
+                            <span class="cost-value house-price">€${adjustedPrice.toLocaleString('en-IE', {minimumFractionDigits: 0})}</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="cost-label">Stamp Duty (1%):</span>
+                            <span class="cost-value">€${stampDuty.toLocaleString('en-IE', {minimumFractionDigits: 0})}</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="cost-label">Other Costs:</span>
+                            <span class="cost-value">€${fixedCosts.toLocaleString('en-IE', {minimumFractionDigits: 0})}</span>
+                        </div>
+                    </div>
+                    <div class="total-cost">
+                        <div class="cost-item">
+                            <span class="cost-label">TOTAL COST:</span>
+                            <span class="cost-value">€${totalCost.toLocaleString('en-IE', {minimumFractionDigits: 0})}</span>
+                        </div>
+                    </div>
+                    <div class="remaining-money ${remainingMoney < 0 ? 'negative' : ''}">
+                        <div class="remaining-amount">€${Math.abs(remainingMoney).toLocaleString('en-IE', {minimumFractionDigits: 0})}</div>
+                        <div class="remaining-label">${remainingMoney >= 0 ? 'Remaining' : 'Shortfall'}</div>
+                    </div>
+                </div>
+                `;
+            });
+
+            // Cache the result
+            scenarioCache[cacheKey] = scenariosHtml;
+            document.getElementById('financialScenarios').innerHTML = scenariosHtml;
+        }
+
         function displayPropertyInfo(property) {
-            document.getElementById('propertyTitle').textContent = property.title || 'Property Details';
-            document.getElementById('propertyPrice').textContent = property.price || 'Price not available';
+            // Batch DOM updates
+            const updates = [
+                ['propertyTitle', property.title || 'Property Details'],
+                ['propertyPrice', property.price || 'Price not available']
+            ];
+
+            updates.forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = value;
+            });
 
             const statusElement = document.getElementById('propertyStatus');
-            statusElement.textContent = property.status.charAt(0).toUpperCase() + property.status.slice(1);
-            statusElement.className = `property-status status-${property.status}`;
+            if (statusElement) {
+                statusElement.textContent = property.status.charAt(0).toUpperCase() + property.status.slice(1);
+                statusElement.className = `property-status status-${property.status}`;
+            }
 
             if (property.notes) {
                 const cleanNotes = cleanNotesForDisplay(property.notes);
                 if (cleanNotes) {
-                    document.getElementById('propertyNotes').textContent = cleanNotes;
+                    const notesElement = document.getElementById('propertyNotes');
+                    if (notesElement) notesElement.textContent = cleanNotes;
                 }
 
-                // Show property image if available
                 const imageUrl = extractImageFromNotes(property.notes);
                 if (imageUrl) {
                     const img = document.getElementById('propertyImage');
-                    img.src = imageUrl;
-                    img.style.display = 'block';
-                    img.onerror = () => img.style.display = 'none';
+                    if (img) {
+                        img.src = imageUrl;
+                        img.style.display = 'block';
+                        img.onerror = () => img.style.display = 'none';
+                    }
                 }
             }
         }
@@ -737,71 +931,6 @@
         `;
 
             document.getElementById('mapContainer').innerHTML = alternativeMapHtml;
-        }
-
-        async function calculateFinancialScenarios(property) {
-            const price = extractPrice(property.price);
-
-            if (!price) {
-                document.getElementById('financialScenarios').innerHTML =
-                    '<div class="error">Unable to calculate financial scenarios - price not available</div>';
-                return;
-            }
-
-            // Get current available funds
-            const availableFunds = updateDetailFunds();
-
-            // Use the same calculation logic as calculator.php
-            const scenarios = [
-                { multiplier: 1.0, name: 'Asking Price', class: 'scenario-asking' },
-                { multiplier: 1.10, name: '10% Over Asking', class: 'scenario-10' },
-                { multiplier: 1.15, name: '15% Over Asking', class: 'scenario-15' }
-            ];
-
-            let scenariosHtml = '';
-
-            scenarios.forEach(scenario => {
-                const adjustedPrice = price * scenario.multiplier;
-                const stampDuty = adjustedPrice * 0.01;
-                const otherCosts = 1900 + 734.31 + 185 + 95 + 21.52 + 33.40 + 66.92 + 1509.80 + 1287; // Sum of all costs
-                const totalCost = adjustedPrice + stampDuty + otherCosts;
-                const remainingMoney = availableFunds - totalCost;
-
-                scenariosHtml += `
-                <div class="scenario-card ${scenario.class}">
-                    <div class="scenario-title">${scenario.name}</div>
-
-                    <div class="cost-breakdown">
-                        <div class="cost-item">
-                            <span class="cost-label">House Price:</span>
-                            <span class="cost-value house-price">€${adjustedPrice.toLocaleString('en-IE', {minimumFractionDigits: 0})}</span>
-                        </div>
-                        <div class="cost-item">
-                            <span class="cost-label">Stamp Duty (1%):</span>
-                            <span class="cost-value">€${stampDuty.toLocaleString('en-IE', {minimumFractionDigits: 0})}</span>
-                        </div>
-                        <div class="cost-item">
-                            <span class="cost-label">Other Costs:</span>
-                            <span class="cost-value">€${otherCosts.toLocaleString('en-IE', {minimumFractionDigits: 0})}</span>
-                        </div>
-                    </div>
-
-                    <div class="total-cost">
-                        <div class="cost-item">
-                            <span class="cost-label">TOTAL COST:</span>
-                            <span class="cost-value">€${totalCost.toLocaleString('en-IE', {minimumFractionDigits: 0})}</span>
-                        </div>
-                    </div>
-
-                    <div class="remaining-money ${remainingMoney < 0 ? 'negative' : ''}">
-                        <div class="remaining-amount">€${Math.abs(remainingMoney).toLocaleString('en-IE', {minimumFractionDigits: 0})}</div>
-                        <div class="remaining-label">${remainingMoney >= 0 ? 'Remaining' : 'Shortfall'}</div>
-                    </div>
-                </div>
-            `;
-            });
-
-            document.getElementById('financialScenarios').innerHTML = scenariosHtml;
         }
 
         async function analyzeDistances(property) {
@@ -948,7 +1077,6 @@
         }
 
         function extractAddressFromProperty(property) {
-            // Try to extract address from title or notes
             if (property.title) {
                 return property.title.replace(/^\d+\s*bed\s*/i, '').trim();
             }
@@ -956,7 +1084,6 @@
         }
 
         function extractAreaFromProperty(property) {
-            // Try to extract area name from property data
             const title = property.title || '';
             const areas = ['Clondalkin', 'Dublin 15', 'Naas', 'Newbridge', 'Swords', 'Enfield'];
 
@@ -965,8 +1092,6 @@
                     return area;
                 }
             }
-
-            // Fallback: try to extract from URL or use a default
             return 'Dublin';
         }
 
@@ -981,19 +1106,25 @@
             return notes.replace(/\s*\|\s*Image:\s*https?:\/\/[^\s|]+/g, '').trim();
         }
 
-        // Event listeners for fund inputs
+        // Initialize with optimized setup
         document.addEventListener('DOMContentLoaded', function() {
-            // Add event listeners to fund inputs
-            document.querySelectorAll('#detailSavingsFunds, #detailMortgageFunds, #detailInheritanceFunds').forEach(input => {
-                input.addEventListener('input', updateDetailFunds);
-            });
+            // Setup debounced input handlers
+            setupFundInputHandlers();
 
-            // Try to load saved funds first
+            // Load saved funds or set defaults
             if (!loadSavedFunds()) {
-                // If no saved funds, set some default values to show how it works
-                document.getElementById('detailSavingsFunds').value = 40000;
-                document.getElementById('detailMortgageFunds').value = 350000;
-                document.getElementById('detailInheritanceFunds').value = 370000;
+                // Set default values and update once
+                const defaults = [
+                    ['detailSavingsFunds', 40000],
+                    ['detailMortgageFunds', 350000],
+                    ['detailInheritanceFunds', 370000]
+                ];
+
+                defaults.forEach(([id, value]) => {
+                    const element = document.getElementById(id);
+                    if (element) element.value = value;
+                });
+
                 updateDetailFunds();
             }
 
